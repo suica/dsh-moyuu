@@ -1,0 +1,16 @@
+# dsh-moyuu-session-write-lock bundle patch.
+#
+# Applied as the LAST bundle layer (add this package to the profile's
+# dsh.profile.bundles, after dsh-base / dsh-web-app). It disables the stock
+# JSONL session-persistence row (whose shared ~/.dsh/sessions root is written
+# concurrently by every running profile with no cross-process lock) and inserts
+# this package's locking backend in its place. The locking backend keeps the
+# same session root, so sessions stay shared across profiles — it just
+# serializes writers and rejects stale appends instead of corrupting the log.
+- id: session-persistence-jsonl
+  disabled: true
+- insert:
+    - id: session-persistence-locked
+      name: 'dsh-moyuu-session-write-lock'
+      config:
+        root: !!js dshHomePath('sessions')
