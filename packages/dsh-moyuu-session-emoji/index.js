@@ -33,6 +33,14 @@ import { SESSION_TITLE_TIMEOUT_CODE, SessionTitleLlmConfigFields, resolveSession
 /** Plugin id — matches the activation id and the package name. */
 export const name = "dsh-moyuu-session-emoji";
 
+/**
+ * Bounded attempts per title: one original call plus one retry. A transient
+ * auxiliary-call failure (timeout, network error, adapter failure) then gets a
+ * second chance to land the emoji title before the service's plain-text
+ * fallback becomes the session's final title.
+ */
+export const MAX_TITLE_CALL_ATTEMPTS = 2;
+
 /** Host services this plugin requires. */
 export const inject = ["sessionTitle", "llm", "sessions"];
 
@@ -97,32 +105,21 @@ export function finishError(finish) {
 }
 
 /**
- * Generate one emoji-prefixed title through the auxiliary LLM call — the same
- * framing / deadline / assembly / normalization policy as the shared
- * `generateSessionTitleWithLlm`, but with the emoji system prompt.
+ * Run one title LLM call attempt — the same framing / deadline / assembly /
+ * normalization policy as the shared `generateSessionTitleWithLlm`, but with
+ * the emoji system prompt. Returns the normalized title; throws on a failed or
+ * cancelled attempt.
  * @param ctx - context exposing the registered LLM service.
  * @param config - validated model-provider policy.
  * @param request - service-owned session, route, message snapshot, and cancellation.
- * @param selectedMessages - exact provider-selected subset to frame and attribute.
+ * @param messages - framed user messages built once by the caller.
+ * @param system - emoji system instruction built once by the caller.
+ * @param route - resolved provider/model route for the call.
+ * @param selectedMessages - exact provider-selected subset to attribute.
  * @param titleProvider - registered title-provider identity recorded with the request.
- * @returns normalized non-empty title, exact source seqs, and used model route.
+ * @returns the normalized non-empty title.
  */
-export async function generateEmojiTitle(ctx, config, request, selectedMessages, titleProvider) {
-  request.signal.throwIfAborted();
-  if (selectedMessages.length === 0) {
-    throw new Error("dsh-moyuu-session-emoji: at least one source message is required");
-  }
-  const framedInput = frameMessages(selectedMessages);
-  const inputBytes = Buffer.byteLength(framedInput, "utf8");
-  if (inputBytes > config.maxInputBytes) {
-    throw new Error(`dsh-moyuu-session-emoji: input is ${inputBytes} bytes, exceeding maxInputBytes ${config.maxInputBytes}`);
-  }
-  const route = resolveRoute(config, request);
-  const messages = [createUserMessage({
-    content: [{ type: "text", text: framedInput }],
-    source: { kind: "plugin", plugin: name }
-  })];
-  const system = systemPrompt(config);
+async function runTitleCall(ctx, config, request, messages, system, route, selectedMessages, titleProvider) {
   const callDeadline = deadline(request.signal, config.timeoutMs, SESSION_TITLE_TIMEOUT_CODE);
   const options = deepFreeze({
     provider: route.provider,
@@ -166,11 +163,56 @@ export async function generateEmojiTitle(ctx, config, request, selectedMessages,
   if (title.length === 0) {
     throw new Error("dsh-moyuu-session-emoji: title model produced no text");
   }
-  return {
-    title,
-    messageSeqs: selectedMessages.map((message) => message.seq),
-    model: route
-  };
+  return title;
+}
+
+/**
+ * Generate one emoji-prefixed title through the auxiliary LLM call, retrying
+ * once when the first attempt fails with a transient (non-cancellation) error.
+ * Without the retry, any single title-call failure leaves the session's
+ * plain-text fallback — committed by the service before `generate` runs — as
+ * the permanent title, because this first-prompt provider is never re-triggered
+ * by later messages. One bounded retry gives a flaky timeout/network/adapter
+ * failure a second chance to land the emoji title.
+ * @param ctx - context exposing the registered LLM service.
+ * @param config - validated model-provider policy.
+ * @param request - service-owned session, route, message snapshot, and cancellation.
+ * @param selectedMessages - exact provider-selected subset to frame and attribute.
+ * @param titleProvider - registered title-provider identity recorded with the request.
+ * @returns normalized non-empty title, exact source seqs, and used model route.
+ */
+export async function generateEmojiTitle(ctx, config, request, selectedMessages, titleProvider) {
+  request.signal.throwIfAborted();
+  if (selectedMessages.length === 0) {
+    throw new Error("dsh-moyuu-session-emoji: at least one source message is required");
+  }
+  const framedInput = frameMessages(selectedMessages);
+  const inputBytes = Buffer.byteLength(framedInput, "utf8");
+  if (inputBytes > config.maxInputBytes) {
+    throw new Error(`dsh-moyuu-session-emoji: input is ${inputBytes} bytes, exceeding maxInputBytes ${config.maxInputBytes}`);
+  }
+  const route = resolveRoute(config, request);
+  const messages = [createUserMessage({
+    content: [{ type: "text", text: framedInput }],
+    source: { kind: "plugin", plugin: name }
+  })];
+  const system = systemPrompt(config);
+  const seqs = selectedMessages.map((message) => message.seq);
+  let lastError;
+  for (let attempt = 1; attempt <= MAX_TITLE_CALL_ATTEMPTS; attempt += 1) {
+    request.signal.throwIfAborted();
+    try {
+      const title = await runTitleCall(ctx, config, request, messages, system, route, selectedMessages, titleProvider);
+      return { title, messageSeqs: seqs, model: route };
+    } catch (error) {
+      if (request.signal.aborted) throw error;
+      lastError = error;
+      if (attempt < MAX_TITLE_CALL_ATTEMPTS) {
+        ctx.logger?.warn?.(`dsh-moyuu-session-emoji: title LLM call attempt ${attempt} of ${MAX_TITLE_CALL_ATTEMPTS} failed; retrying: ${String(error)}`);
+      }
+    }
+  }
+  throw lastError;
 }
 
 /**

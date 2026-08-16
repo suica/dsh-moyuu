@@ -12,6 +12,10 @@ This package registers the **sole** session-title provider as a **first-prompt m
 
 > **Important**: `sessionTitle.register()` accepts **exactly one** provider, so enabling this feature **requires disabling the default `session-title-llm` row** (see below). This is a swap of the title *provider*, not an addition — the title pipeline (route, timeout, byte budget) is unchanged from the default.
 
+### Transient-failure retry
+
+The title LLM call is bounded to two attempts (one retry). A transient failure — a timeout, a network error, or an adapter failure — is retried once before giving up: the session-title service commits a plain-text fallback title *before* the provider runs, and this first-prompt provider is never re-triggered by later messages, so without the retry a single flaky title call would leave the session permanently named by the plain fallback (no emoji). Cancellation (a disposed session) is never retried and fails the title generation as before; if both attempts fail, the error propagates and the plain fallback title stays.
+
 ## Configuration
 
 The provider uses the same model-title config keys as the default `session-title-llm` row (its `Config` schema reuses `SessionTitleLlmConfigFields`):
@@ -68,6 +72,7 @@ Smoke test (development):
 
 ```sh
 node --check index.js
+node test/retry.mjs   # bounded-retry policy (transient failure → retry → emoji title)
 ```
 
 ## Peer dependencies
