@@ -39,4 +39,11 @@ else
   git clone --depth 1 --branch main "$REPO_URL" "$MANAGED_DIR"
 fi
 
+# Materialize the peer dependencies of the node-side plugins
+# (dsh-moyuu-session-emoji / dsh-moyuu-session-write-lock): with `link:`
+# installs, Node resolves peers from the package's own location (this checkout),
+# not from the profile's node_modules, so the checkout needs its own pnpm install.
+echo "==> installing dsh-moyuu workspace deps (node-plugin peers)"
+(cd "$MANAGED_DIR" && pnpm install)
+
 exec bash "$MANAGED_DIR/scripts/setup-moyu-profile.sh" "$@"
