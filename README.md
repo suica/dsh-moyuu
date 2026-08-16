@@ -7,6 +7,37 @@
 
 📖 想直接用？先读 [使用指南](docs/USAGE.zh.md)——把它合并进你自己的 profile（挑着装），或直接用我们配好的 `moyu` profile（开箱即用）。
 
+## 快速开始（Quick start）
+
+**方式一：直接用我们的 `moyu` profile（全部功能开箱即用）**
+
+```sh
+git clone https://github.com/suica/dsh-moyuu.git
+mkdir -p ~/.dsh/profiles/moyu
+# 把 docs/USAGE.zh.md 第 6 节的 package.json / cordis.patch.yml / pnpm-workspace.yaml
+# 复制进 ~/.dsh/profiles/moyu/，并把其中 <dsh-moyuu> 换成你的 clone 路径
+cd ~/.dsh/profiles/moyu && pnpm install
+dsh --profile moyu --port 3080   # 浏览器打开 http://127.0.0.1:3080
+```
+
+**方式二：合并进你自己的 profile（只加想要的功能）**
+
+在 `~/.dsh/profiles/<你的 profile>/package.json` 加依赖、`cordis.patch.yml` 加一行激活：
+
+```jsonc
+"dependencies": {
+  "dsh-moyuu-brand": "link:/path/to/dsh-moyuu/packages/dsh-moyuu-brand"
+}
+```
+
+```yaml
+- insert:
+    - id: dsh-moyuu-brand
+      name: 'dsh-moyuu-brand'
+```
+
+客户端功能**刷新页面**即生效；服务端功能**重启 profile**。完整的两条路径、逐功能激活 / 验证 / 移除与 FAQ 见 [使用指南](docs/USAGE.zh.md)。
+
 ## 功能包列表
 
 | Package | 功能 |
