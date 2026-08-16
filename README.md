@@ -37,6 +37,23 @@ node --check packages/dsh-moyuu-new-session-tooltip/client.js
 node --check packages/dsh-moyuu-session-emoji/index.js
 ```
 
+## 自迭代开发工作流（先动态迭代，再静态固化）
+
+给 profile 加插件是**静态组合**改动（依赖 + `cordis.patch.yml` 行），静态组合只在启动时读取，
+所以**每次改动都要重启 profile**——而重启会终止当前会话，agent 一旦依赖重启就无法自迭代。
+
+因此拆成两条回路：
+
+1. **热迭代回路（不重启）**：先用 DSH 的**动态插件**机制把功能在活进程里做出来、调通
+   （定义 → 激活 → 看诊断 → 修 → 再激活，出错在同一插件上修复、可回滚）。
+   动态插件是临时的，进程重启即消失，只负责迭代、不负责持久。
+2. **固化回路（每个功能只做一次）**：功能稳定后新建 `packages/dsh-moyuu-<feature>/`、
+   加 profile 依赖 + `cordis.patch.yml` 行，然后**重启 profile 一次**（node 插件）
+   或**刷新页面**（纯 client 插件）。
+
+于是“重启 profile”从“每次迭代”变成“每个功能只做一次”。详细规则见
+[docs/PLUGIN-PACKAGE-RULES.zh.md](docs/PLUGIN-PACKAGE-RULES.zh.md) 第 9 节。
+
 ## 安装 / 激活（以 web profile 为例）
 
 每个功能独立安装、独立激活。开发时用 `link:` 指向本仓库内的包：
