@@ -1,0 +1,31 @@
+{
+  "name": "dsh-moyuu-command-delegate",
+  "version": "0.1.0",
+  "description": "MOYUU feature package: expose the subagent / workflow / ralph delegation tools as explicit slash commands (/subagent, /workflow, /ralph) — one command per delegation tool, steered through the receiving agent's model-visible path.",
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "plugin",
+    "command",
+    "subagent",
+    "workflow",
+    "ralph",
+    "moyuu"
+  ],
+  "type": "module",
+  "private": true,
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./package.json": "./package.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/suica/dsh-moyuu.git",
+    "directory": "packages/dsh-moyuu-command-delegate"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-llm": "*"
+  },
+  "license": "MIT"
+}
