@@ -10,6 +10,7 @@
 | Package | 功能 |
 |---|---|
 | [packages/dsh-moyuu](packages/dsh-moyuu) | 品牌：Web 左上角标识 “Harness” → “MOYUU” |
+| [packages/dsh-moyuu-tab-in-textbox](packages/dsh-moyuu-tab-in-textbox) | 键盘：文本框内 Tab 插入制表符，不再跳转焦点 |
 | [packages/dsh-moyuu-example](packages/dsh-moyuu-example) | 示例：最小可独立加载的客户端插件（新功能的模板） |
 | [packages/dsh-moyuu-cmdk-new-session](packages/dsh-moyuu-cmdk-new-session) | 快捷键：Mod+K（Cmd+K / Ctrl+K）在 Web 界面新建会话 |
 | [packages/dsh-moyuu-new-session-tooltip](packages/dsh-moyuu-new-session-tooltip) | 悬停 tooltip：新会话按钮显示文案与 ⌘K / Ctrl+K 快捷键提示 |
@@ -23,6 +24,7 @@ DSH 官方本身就是“每功能一包”（`@deepseek-ai/dsh-tool-*`、`dsh-c
 ```sh
 pnpm install
 node --check packages/dsh-moyuu/client.js
+node --check packages/dsh-moyuu-tab-in-textbox/client.js
 node --check packages/dsh-moyuu-example/client.js
 node --check packages/dsh-moyuu-cmdk-new-session/client.js
 node --check packages/dsh-moyuu-new-session-tooltip/client.js
