@@ -10,6 +10,7 @@ This repository is a **pnpm monorepo**: **one feature = one package, each indepe
 |---|---|
 | [packages/dsh-moyuu](packages/dsh-moyuu) | Brand — replaces "Harness" with "MOYUU" in the web wordmark |
 | [packages/dsh-moyuu-example](packages/dsh-moyuu-example) | Example — minimal independently-loadable client plugin (template for new features) |
+| [packages/dsh-moyuu-session-context-menu](packages/dsh-moyuu-session-context-menu) | Session context menu — right-clicking a session opens its "⋯" (More) menu at the cursor |
 | [packages/dsh-moyuu-session-write-lock](packages/dsh-moyuu-session-write-lock) | Node bundle — cross-process session write-lock so concurrent profiles never corrupt shared sessions |
 
 ## Why monorepo
