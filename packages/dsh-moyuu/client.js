@@ -2,24 +2,28 @@
  * dsh-moyuu — MOYUU-brand DeepSeek Harness web client plugin.
  *
  * Respects the original DeepSeek brand (the whale logo and the "DeepSeek"
- * vector wordmark) but swaps the trailing word "Harness" for "MOYUU", so the
- * top-left wordmark reads "DeepSeek MOYUU".
+ * vector wordmark) but swaps the trailing badge word "Harness" for "MOYUU",
+ * so the top-left wordmark reads "DeepSeek MOYUU".
  *
- * The wordmark is a single hardcoded inline SVG (viewBox "0 0 182 24") with
- * no configurable slot. Layout of its 19 paths by first x-coordinate:
+ * The wordmark is a single hardcoded inline SVG (viewBox "0 0 182 24") with no
+ * configurable slot. Its layout (from @deepseek-ai/dsh-client-ui-primitives'
+ * `BrandWordmark`):
  *
- *   x  0–121  → whale logo + "DeepSeek" glyphs  (keep)
- *   x ≥132    → "Harness" glyphs                (drop, replace with "MOYUU")
- *   x    0    → clip-path defs                  (keep)
+ *   - whale logo + "DeepSeek" glyphs   → kept as-is (fill="currentColor")
+ *   - a rounded pill (rect x=129.348 y=5.5 w=52 h=14 rx=2, fill="currentColor")
+ *   - a `<g clip-path="url(#dsh-wordmark-badge-clip)">` of "Harness" glyphs,
+ *     filled with var(--dsw-alias-label-primary-inverted)
  *
- * Strategy (stable across React re-renders, no build-time edits):
- *   1. Grab the live wordmark SVG once it appears in the DOM.
- *   2. Clone it, remove the "Harness" glyph paths (first x ≥ 125), and append
- *      a <text>MOYUU</text> in their place.
- *   3. Serialize the result to a data-URI and inject a <style> that hides the
- *      original SVG and renders the baked wordmark as the brand button's
- *      `::after` background. `currentColor` inside the baked SVG inherits the
- *      button color, so light/dark themes both work.
+ * Strategy (survives React re-renders, no build-time edits):
+ *   1. On the live wordmark SVG, remove the "Harness" glyph group.
+ *   2. Keep the pill background and inject `<text>MOYUU</text>` centered inside
+ *      it, filled with the app's inverted-label color
+ *      (`var(--dsw-alias-label-primary-inverted)`).
+ *   3. Mark the SVG (`data-dsh-moyuu`) and keep a MutationObserver alive so the
+ *      brand is re-applied whenever React re-creates the wordmark (sidebar
+ *      collapse/expand, theme toggles, remounts). Because the mutation lives in
+ *      the live DOM, `currentColor` and the CSS variable resolve natively, so
+ *      both light and dark themes work with no re-baking.
  *
  * Loader contract (see dsh-client-modules): the bundle registers a factory
  * via `window.__ModuleLoader__.load({ id, factory })`; the factory returns a
@@ -33,91 +37,73 @@ window.__ModuleLoader__.load({
     var exports = module.exports;
 
     var BRAND_SVG = 'svg[viewBox="0 0 182 24"]';
-    // "Harness" glyph paths all start at x ≥ 125 (see module doc); the whale
-    // and "DeepSeek" glyphs stay at x ≤ 121, and the clip defs at x = 0.
-    var HARNESS_X_MIN = 125;
-
+    var MARKER = "data-dsh-moyuu";
     var SVG_NS = "http://www.w3.org/2000/svg";
+    var initialized = false;
+    // The pill badge behind "Harness" in the wordmark's viewBox (52×14 rounded
+    // rect at x=129.348, y=5.5); "MOYUU" is centered inside it.
+    var PILL = { x: 129.348, y: 5.5, w: 52, h: 14 };
 
-    /** First x coordinate of a path's `d`, or -1 when it starts differently. */
-    function pathStartX(path) {
-      var m = /^M\s*([\d.]+)/.exec(path.getAttribute("d") || "");
-      return m ? parseFloat(m[1]) : -1;
-    }
+    /**
+     * Rewrite one live wordmark SVG in place: drop the "Harness" glyph group
+     * and center "MOYUU" in the pill. Idempotent via the marker attribute.
+     */
+    function applyBrand(svg) {
+      if (svg.hasAttribute(MARKER)) return;
 
-    /** Build a "DeepSeek MOYUU" wordmark from the live SVG. */
-    function buildReplacement(svg) {
-      var clone = svg.cloneNode(true);
-      Array.prototype.forEach.call(clone.querySelectorAll("path"), function (p) {
-        if (pathStartX(p) >= HARNESS_X_MIN) p.remove();
+      // 1. Remove the "Harness" glyphs (the clipped group inside the pill).
+      var badge = svg.querySelector('g[clip-path*="dsh-wordmark-badge-clip"]');
+      if (badge) badge.remove();
+
+      // 2. Locate the pill so the text centers on it even if the geometry
+      //    drifts in a future dsh version; fall back to the known geometry.
+      var pill = null;
+      Array.prototype.forEach.call(svg.querySelectorAll("rect"), function (r) {
+        if (parseFloat(r.getAttribute("x") || "0") >= 125) pill = r;
       });
+      var cx = pill
+        ? parseFloat(pill.getAttribute("x")) + parseFloat(pill.getAttribute("width")) / 2
+        : PILL.x + PILL.w / 2;
+      var cy = pill
+        ? parseFloat(pill.getAttribute("y")) + parseFloat(pill.getAttribute("height")) / 2
+        : PILL.y + PILL.h / 2;
+
       var text = document.createElementNS(SVG_NS, "text");
-      text.setAttribute("x", "136");
-      text.setAttribute("y", "12.6");
-      text.setAttribute("font-size", "8.4");
+      text.setAttribute("x", String(cx));
+      text.setAttribute("y", String(cy));
+      text.setAttribute("text-anchor", "middle");
+      text.setAttribute("dominant-baseline", "central");
+      // 8px ≈ the original "Harness" glyph height (~7.2 viewBox units) inside
+      // the 14px-tall pill, at the wordmark's 1:1 CSS-px scale.
+      text.setAttribute("font-size", "8");
       text.setAttribute("font-weight", "600");
       text.setAttribute("letter-spacing", "0.3");
-      text.setAttribute("dominant-baseline", "middle");
-      text.setAttribute("fill", "currentColor");
+      text.setAttribute("fill", "var(--dsw-alias-label-primary-inverted)");
       text.textContent = "MOYUU";
-      clone.appendChild(text);
-      return clone.outerHTML;
-    }
+      svg.appendChild(text);
 
-    var STYLE_TAG = "dsh-moyuu/brand.css";
-
-    function ensureStyle(html) {
-      if (document.querySelector("style[data-plugin-css=" + JSON.stringify(STYLE_TAG) + "]") !== null) {
-        return true;
-      }
-      var data = "data:image/svg+xml," + encodeURIComponent(html);
-      var css = [
-        "/* dsh-moyuu: keep DeepSeek brand, swap Harness -> MOYUU */",
-        BRAND_SVG + " { display: none !important; }",
-        "button:has(> " + BRAND_SVG + ") { position: relative; }",
-        "button:has(> " + BRAND_SVG + ")::after {",
-        "  content: \"\";",
-        "  display: inline-block;",
-        "  width: 182px;",
-        "  height: 24px;",
-        "  flex: none;",
-        "  background: url(\"" + data + "\") no-repeat center / contain;",
-        "}"
-      ].join("\n");
-      var tag = document.createElement("style");
-      tag.setAttribute("data-plugin", "dsh-moyuu");
-      tag.setAttribute("data-plugin-css", STYLE_TAG);
-      tag.textContent = css;
-      document.head.appendChild(tag);
-      return true;
+      // 3. Mark as applied so the observer never loops on our own mutations.
+      svg.setAttribute(MARKER, "applied");
     }
 
     function apply() {
-      if (typeof document === "undefined" || document.head === null) return;
-      // If the wordmark is already baked in, nothing else to do.
-      if (document.querySelector("style[data-plugin-css=" + JSON.stringify(STYLE_TAG) + "]") !== null) return;
+      if (typeof document === "undefined" || document.documentElement === null) return;
+      // Guard against re-activation (e.g. HMR) registering duplicate observers.
+      if (initialized) return;
+      initialized = true;
 
       var svg = document.querySelector(BRAND_SVG);
-      if (svg) {
-        ensureStyle(buildReplacement(svg));
-        return;
-      }
-      // The sidebar wordmark may mount a moment after the plugin activates;
-      // wait for it, then bake once.
-      var observed = document.body || document.documentElement;
-      if (!observed) return;
+      if (svg) applyBrand(svg);
+
+      // The sidebar unmounts the wordmark when it collapses and React may
+      // remount it later (re-render, theme toggle, session start). Keep a
+      // persistent observer so the brand is re-applied to any pristine
+      // wordmark that appears, without disturbing the rest of the DOM.
       var mo = new MutationObserver(function () {
-        if (document.querySelector("style[data-plugin-css=" + JSON.stringify(STYLE_TAG) + "]") !== null) {
-          mo.disconnect();
-          return;
-        }
         var s = document.querySelector(BRAND_SVG);
-        if (s) {
-          ensureStyle(buildReplacement(s));
-          mo.disconnect();
-        }
+        if (s && !s.hasAttribute(MARKER)) applyBrand(s);
       });
-      mo.observe(observed, { childList: true, subtree: true });
+      mo.observe(document.documentElement, { childList: true, subtree: true });
     }
 
     exports.apply = apply;

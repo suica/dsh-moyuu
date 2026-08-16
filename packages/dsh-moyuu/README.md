@@ -8,13 +8,13 @@
 
 ## What it does
 
-The DeepSeek Harness web shell draws its product wordmark as a hardcoded inline SVG (`viewBox="0 0 182 24"`) in the sidebar — there is no configurable slot for it. This package is a small **client plugin** (`dsh.client`, platform `web`) that:
+The DeepSeek Harness web shell draws its product wordmark as a hardcoded inline SVG (`viewBox="0 0 182 24"`) in the sidebar — there is no configurable slot for it. This package is a small **client plugin** (`dsh.client`, platform `web`) that patches the live SVG in place:
 
-1. grabs the live wordmark SVG at runtime,
-2. removes only the "Harness" glyph paths (identified by their first x-coordinate ≥ 125) and appends a `<text>MOYUU</text>` in their place,
-3. bakes the result into a data-URI and renders it as the brand button's `::after` background while hiding the original SVG.
+1. removes the "Harness" glyph group (`<g clip-path="url(#dsh-wordmark-badge-clip)">`),
+2. keeps the rounded pill background and injects `<text>MOYUU</text>` centered inside it, filled with the app's inverted-label color,
+3. marks the SVG and keeps a MutationObserver alive so the brand is re-applied whenever React re-creates the wordmark (sidebar collapse/expand, theme toggles, remounts).
 
-Because the baked wordmark is a stable CSS background it survives React re-renders, works in both light and dark themes (the `currentColor` fill inherits the button color), and touches no compiled build artifacts — it ships as a normal npm package and is picked up at runtime by `dsh-client-modules`.
+Because the mutation lives in the live DOM, `currentColor` and CSS variables resolve natively — both light and dark themes work automatically with no re-baking — and it touches no compiled build artifacts: it ships as a normal npm package and is picked up at runtime by `dsh-client-modules`.
 
 ## Install & activate (independently)
 
@@ -37,7 +37,15 @@ Refresh the web UI. The wordmark becomes **DeepSeek MOYUU**. Removing this row +
 ## How it works
 
 - `index.js` — the **node half**: an empty `apply()` so the package activates as a Loader entry.
-- `client.js` — the **browser half**: registers via `window.__ModuleLoader__.load({ id, factory })`. On activation it grabs the live wordmark SVG, clones it, drops the "Harness" glyph paths (first x-coordinate ≥ 125), appends `<text>MOYUU</text>`, serializes that to a data-URI, and injects a `<style>` that hides the original SVG and shows the baked wordmark as the brand button's `::after` background.
+- `client.js` — the **browser half**: registers via `window.__ModuleLoader__.load({ id, factory })`. On activation it finds the live wordmark SVG and rewrites it in place: drops the `Harness` glyph group, keeps the pill, and appends a centered `<text>MOYUU</text>` filled with `var(--dsw-alias-label-primary-inverted)`. A persistent `MutationObserver` re-applies the brand to any pristine wordmark React later mounts:
+
+```js
+// roughly what applyBrand(svg) does to the live SVG
+svg.querySelector('g[clip-path*="dsh-wordmark-badge-clip"]').remove();
+svg.appendChild(<text x="155.348" y="12.5" text-anchor="middle"
+                   dominant-baseline="central" font-size="8"
+                   fill="var(--dsw-alias-label-primary-inverted)">MOYUU</text>);
+```
 
 The `dsh` manifest:
 
@@ -53,7 +61,7 @@ The `dsh` manifest:
 
 ## Customize
 
-To change the replacement text (default `MOYUU`), font size, weight, or position, edit `client.js` — the `<text>` element built in `buildReplacement()` (`x`, `y`, `font-size`, and `textContent`).
+To change the replacement text (default `MOYUU`), font size, weight, or position, edit `client.js`'s `applyBrand()` — the `<text>` element it builds (`x`, `y`, `font-size`, and `textContent`).
 
 ## License
 

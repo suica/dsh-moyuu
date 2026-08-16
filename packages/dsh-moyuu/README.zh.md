@@ -8,13 +8,13 @@
 
 ## 它做了什么
 
-DeepSeek Harness 的 Web shell 把产品标识画成硬编码的内联 SVG（`viewBox="0 0 182 24"`），没有可配置的槽位。本包是一个很小的**客户端插件**（`dsh.client`，平台 `web`）：
+DeepSeek Harness 的 Web shell 把产品标识画成硬编码的内联 SVG（`viewBox="0 0 182 24"`），没有可配置的槽位。本包是一个很小的**客户端插件**（`dsh.client`，平台 `web`），直接在真实 SVG 上就地修改：
 
-1. 运行时抓取真实的标识 SVG；
-2. 只删掉 "Harness" 那几个字形（按首个 x 坐标 ≥ 125 识别），在原位追加 `<text>MOYUU</text>`；
-3. 把结果烘焙成 data-URI，作为品牌按钮的 `::after` 背景渲染，同时隐藏原始 SVG。
+1. 删掉 "Harness" 字形组（`<g clip-path="url(#dsh-wordmark-badge-clip)">`）；
+2. 保留圆角药丸背景，在它正中间注入 `<text>MOYUU</text>`，用应用的反色标签色填充；
+3. 打上标记并维持一个 `MutationObserver`，每当 React 重建标识（折叠/展开侧栏、切换主题、重新挂载）就自动重新应用。
 
-因为烘焙后的标识是稳定的 CSS 背景，所以能扛住 React 重渲染、浅色/深色主题都适用（`currentColor` 继承按钮颜色）、并且不碰任何编译产物——它就是一个普通 npm 包，运行时由 `dsh-client-modules` 动态发现加载。
+因为改动就在真实 DOM 里，`currentColor` 和 CSS 变量天然解析——浅色/深色主题都自动适配、无需重烘焙——并且不碰任何编译产物：它就是一个普通 npm 包，运行时由 `dsh-client-modules` 动态发现加载。
 
 ## 独立安装与激活
 
@@ -37,7 +37,15 @@ DeepSeek Harness 的 Web shell 把产品标识画成硬编码的内联 SVG（`vi
 ## 工作原理
 
 - `index.js` — **服务端 half**：空的 `apply()`，让包能作为 Loader 条目激活。
-- `client.js` — **浏览器 half**：通过 `window.__ModuleLoader__.load({ id, factory })` 注册。激活时抓取真实标识 SVG，克隆后删掉 "Harness" 字形（首个 x ≥ 125），追加 `<text>MOYUU</text>`，序列化成 data-URI 并注入 `<style>`：隐藏原始 SVG，把烘焙后的标识作为品牌按钮 `::after` 背景显示。
+- `client.js` — **浏览器 half**：通过 `window.__ModuleLoader__.load({ id, factory })` 注册。激活时找到真实标识 SVG 并就地重写：删掉 "Harness" 字形组、保留药丸、追加居中的 `<text>MOYUU</text>`（填充 `var(--dsw-alias-label-primary-inverted)`）。一个常驻的 `MutationObserver` 会把品牌重新应用到 React 之后挂载的任何原始标识上：
+
+```js
+// 大致就是 applyBrand(svg) 对真实 SVG 做的事
+svg.querySelector('g[clip-path*="dsh-wordmark-badge-clip"]').remove();
+svg.appendChild(<text x="155.348" y="12.5" text-anchor="middle"
+                   dominant-baseline="central" font-size="8"
+                   fill="var(--dsw-alias-label-primary-inverted)">MOYUU</text>);
+```
 
 `dsh` 清单：
 
@@ -53,7 +61,7 @@ DeepSeek Harness 的 Web shell 把产品标识画成硬编码的内联 SVG（`vi
 
 ## 自定义
 
-想换替换文字（默认 `MOYUU`）、字号、字重或位置，改 `client.js` 里 `buildReplacement()` 构建的 `<text>` 元素（`x`、`y`、`font-size`、`textContent`）。
+想换替换文字（默认 `MOYUU`）、字号、字重或位置，改 `client.js` 里 `applyBrand()` 构建的 `<text>` 元素（`x`、`y`、`font-size`、`textContent`）。
 
 ## License
 
