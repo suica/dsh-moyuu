@@ -1,4 +1,4 @@
-# dsh-moyuu
+# dsh-moyuu-brand
 
 [dsh-moyuu](https://github.com/suica/dsh-moyuu) monorepo 的 **品牌**功能包——[DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness)（`dsh`）的客户端插件。
 
@@ -21,15 +21,15 @@ DeepSeek Harness 的 Web shell 把产品标识画成硬编码的内联 SVG（`vi
 ```jsonc
 // ~/.dsh/profiles/web/package.json —— 只装这一个功能
 "dependencies": {
-  "dsh-moyuu": "link:/path/to/dsh-moyuu/packages/dsh-moyuu"
+  "dsh-moyuu-brand": "link:/path/to/dsh-moyuu/packages/dsh-moyuu-brand"
 }
 ```
 
 ```yaml
 # ~/.dsh/profiles/web/cordis.patch.yml
 - insert:
-    - id: dsh-moyuu
-      name: 'dsh-moyuu'
+    - id: dsh-moyuu-brand
+      name: 'dsh-moyuu-brand'
 ```
 
 刷新 Web 界面，标识就变成 **DeepSeek MOYUU**。删掉这一行并移除依赖即停用本功能，其它功能不受影响。

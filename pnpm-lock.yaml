@@ -8,7 +8,7 @@ importers:
 
   .: {}
 
-  packages/dsh-moyuu: {}
+  packages/dsh-moyuu-brand: {}
 
   packages/dsh-moyuu-cmdk-new-session: {}
 

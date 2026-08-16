@@ -1,5 +1,5 @@
 /**
- * dsh-moyuu — MOYUU-brand DeepSeek Harness web client plugin.
+ * dsh-moyuu-brand — MOYUU-brand DeepSeek Harness web client plugin.
  *
  * Respects the original DeepSeek brand (the whale logo and the "DeepSeek"
  * vector wordmark) but swaps the trailing badge word "Harness" for "MOYUU",
@@ -19,7 +19,7 @@
  *   2. Keep the pill background and inject `<text>MOYUU</text>` centered inside
  *      it, filled with the app's inverted-label color
  *      (`var(--dsw-alias-label-primary-inverted)`).
- *   3. Mark the SVG (`data-dsh-moyuu`) and keep a MutationObserver alive so the
+ *   3. Mark the SVG (`data-dsh-moyuu-brand`) and keep a MutationObserver alive so the
  *      brand is re-applied whenever React re-creates the wordmark (sidebar
  *      collapse/expand, theme toggles, remounts). Because the mutation lives in
  *      the live DOM, `currentColor` and the CSS variable resolve natively, so
@@ -31,13 +31,13 @@
  * activate the plugin.
  */
 window.__ModuleLoader__.load({
-  id: "dsh-moyuu",
+  id: "dsh-moyuu-brand",
   factory: (require) => {
     var module = { exports: {} };
     var exports = module.exports;
 
     var BRAND_SVG = 'svg[viewBox="0 0 182 24"]';
-    var MARKER = "data-dsh-moyuu";
+    var MARKER = "data-dsh-moyuu-brand";
     var SVG_NS = "http://www.w3.org/2000/svg";
     var initialized = false;
     // The pill badge behind "Harness" in the wordmark's viewBox (52×14 rounded
