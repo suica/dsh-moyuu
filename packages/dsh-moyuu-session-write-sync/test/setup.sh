@@ -7,11 +7,17 @@
 # point DSH_PACKAGES at its node_modules/@deepseek-ai scope when it differs.
 set -euo pipefail
 
-cd "$(dirname "$0")/.."   # worktree root
+cd "$(dirname "$0")/../../.."   # worktree root (from packages/<pkg>/test)
 
 DSH_PACKAGES="${DSH_PACKAGES:-}"
 if [[ -z "$DSH_PACKAGES" ]]; then
-  DSH_PACKAGES="$(node -e 'process.stdout.write(require.resolve("@deepseek-ai/dsh/package.json", { paths: [require("node:path").join(process.env.HOME, ".local/share/fnm/node-versions")] }).replace(/package\.json$/, "node_modules/@deepseek-ai"))' 2>/dev/null || true)"
+  # The fnm install layout nests under ~/.local/share/fnm/node-versions/<v>/installation/...
+  for d in "$HOME"/.local/share/fnm/node-versions/*/installation/lib/node_modules/@deepseek-ai/dsh; do
+    if [[ -d "$d/node_modules/@deepseek-ai/dsh-session" ]]; then
+      DSH_PACKAGES="$d/node_modules/@deepseek-ai"
+      break
+    fi
+  done
 fi
 if [[ -z "$DSH_PACKAGES" || ! -d "$DSH_PACKAGES/dsh-session" ]]; then
   echo "error: could not locate the harness @deepseek-ai packages (set DSH_PACKAGES)" >&2
