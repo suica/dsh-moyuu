@@ -54,6 +54,13 @@ git push origin --delete worktree/feat/my-change
 - `<type>` 与分支中的 `<type>` 保持一致（feat / fix / docs / refactor / chore / perf / test）。
 - 示例：`feat: add search box to landing page`、`fix(web): correct MOYUU wordmark layout`
 
+## 文档规则：中英双语 README
+
+- 根目录 README 使用中英双语：`README.md`（中文，默认入口）+ `README.en.md`（英文）。
+- `README.md` 顶部提供指向 `README.en.md` 的语言切换链接；英文版顶部同样链接回 `README.md`。
+- **任何对 README 的更新（增删改内容）都必须同步更新中英两份**，保持内容一致、行文对应；禁止只改其中一份。
+- 新增或修改文档（如 `docs/*`）时，默认使用中文；如提供英文版，需保持两者同步。
+
 ## 其他
 
 - 不提交机密信息、凭据或大体积二进制文件。
