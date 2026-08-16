@@ -1,0 +1,16 @@
+# dsh-moyuu-session-write-sync bundle patch.
+#
+# Stacked consumer for dsh-moyuu-session-write-lock: applied as the LAST bundle
+# layer (add this package to the profile's dsh.profile.bundles AFTER
+# dsh-moyuu-session-write-lock). It disables the locking-only
+# session-persistence-locked row and inserts this package's syncing backend in
+# its place. The syncing backend extends the locking backend, so both bundles
+# must be installed (lock first, sync after); it keeps the same session root and
+# adds only the SESSION_ADVANCED / SESSION_LOCK_TIMEOUT surface layer.
+- id: session-persistence-locked
+  disabled: true
+- insert:
+    - id: session-persistence-synced
+      name: 'dsh-moyuu-session-write-sync'
+      config:
+        root: !!js dshHomePath('sessions')
