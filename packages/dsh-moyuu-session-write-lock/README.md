@@ -16,14 +16,31 @@ frames another process just committed — permanently corrupting the session.
 
 This package is a subclass of that backend that wraps every physical write in a
 per-log cross-process **file lock** (`<log>.lock`, `wx` exclusive create, stale
-lock reclaimed by PID liveness) and, before appending, reconciles the durable
-committed tail with this writer's cursor: if another process already advanced the
-log, the append is rejected with `SESSION_ADVANCED` ("modified by another
-process; reload") instead of writing duplicate sequence numbers.
+lock reclaimed by PID liveness) and, before appending, **idempotently
+reconciles** the batch against the durable committed tail (re-read under the
+lock, compared event by event):
+
+- a batch that continues the durable tail appends normally;
+- a batch whose events are **already committed by another process with the same
+  seqs and same content** — most commonly the deterministic closers
+  (`step/end` / `turn/end` / `session/end-seed`) that two profiles both generate
+  for the same interrupted turn — is **skipped** instead of rejected, so
+  **opening the same session from another profile no longer errors** (fixes the
+  "reload doesn't help" symptom);
+- a batch whose prefix is committed and whose suffix is not appends only the
+  missing suffix (idempotent convergence);
+- only a genuinely divergent write — different content at a seq another process
+  already committed — is rejected with `SESSION_ADVANCED` ("modified by another
+  process; reload").
+
+Crash repair is reconciled the same way under the lock: the torn tail is
+truncated only while it is still torn at the exact boundary this caller
+observed, so one process never truncates frames another process just committed.
 
 Result: sessions stay **shared across profiles** (no per-profile isolation), and
 concurrent access is safe — the same session can be opened/read from any number
-of profiles, but only one profile writes it at a time.
+of profiles, and a second profile opening it converges with the latest durable
+state automatically (no manual reload).
 
 ## Install & activate
 
@@ -60,9 +77,12 @@ backend.
 
 1. Start two web profiles (`dsh --profile moyu --port 3080`, `dsh --profile web --port 3090`).
 2. Open the same workspace in both; create/continue a session in one.
-3. Confirm the other profile's write to the same session is rejected with
-   `SESSION_ADVANCED` (reload) instead of corrupting the log.
-4. The session log stays structurally valid (no duplicate/out-of-order `seq`).
+3. Confirm the other profile can open the same session **without** `SESSION_ADVANCED`:
+   the two profiles' deterministic closing events reconcile idempotently (the
+   later writer skips), so the log is not duplicated or corrupted.
+4. The session log stays structurally valid (no duplicate/out-of-order `seq`);
+   only a genuine concurrent divergence (different content racing for one `seq`)
+   is rejected with `SESSION_ADVANCED`.
 
 Runtime smoke test while developing:
 
