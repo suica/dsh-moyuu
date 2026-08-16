@@ -81,6 +81,15 @@ node --check index.js
 - `@deepseek-ai/schemastery`（loader 配置 schema）
 - `@deepseek-ai/cordis`
 
+本地开发时 profile 通过 `link:` 依赖本包，Node 从**包自身所在位置**（monorepo worktree）解析 ESM import，而不是 profile 的 `node_modules`。因此这些 peer 也列在 `devDependencies`（固定为 profile 运行的 harness 版本），并需**在 monorepo worktree 里执行 `pnpm install`** 使它们存在：
+
+```sh
+# 在 monorepo 根目录 / worktree
+pnpm install
+```
+
+否则 loader 会报 `ERR_MODULE_NOT_FOUND: Cannot find package '@deepseek-ai/schemastery'`（与 `dsh-moyuu-session-write-lock` 的前提相同）。发布安装（`dsh plugin --profile <name> add …`）会把包装进 profile 的 store，peers 正常解析。
+
 ## License
 
 [MIT](../../LICENSE)

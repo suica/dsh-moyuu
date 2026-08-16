@@ -81,6 +81,24 @@ Declared as `peerDependencies`, resolved at runtime through the profile's module
 - `@deepseek-ai/schemastery` (loader config schema)
 - `@deepseek-ai/cordis`
 
+During local development the profile consumes this package through a `link:`
+dependency, and Node resolves ESM imports from the **package's own location**
+(the monorepo worktree) — not from the profile's `node_modules`. The peers are
+therefore also listed as `devDependencies` (pinned to the harness versions the
+profile runs), and **`pnpm install` must be run in the monorepo worktree** so
+they are present there:
+
+```sh
+# from the monorepo root / worktree
+pnpm install
+```
+
+Without this, the loader fails with `ERR_MODULE_NOT_FOUND: Cannot find package
+'@deepseek-ai/schemastery'` (the same prerequisite as
+`dsh-moyuu-session-write-lock`). Published installs
+(`dsh plugin --profile <name> add …`) install the package into the profile's
+store, where its peers are resolved normally.
+
 ## License
 
 [MIT](../../LICENSE)
