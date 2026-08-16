@@ -12,6 +12,10 @@ DSH 的会话标题由 `sessionTitle` 服务生成（`@deepseek-ai/dsh-session-t
 
 > **重要**：`sessionTitle.register()` 同一时刻只允许注册**一个** provider，因此启用本功能必须**禁用默认的 `session-title-llm` 行**（见下）。这是标题 provider 的**替换**而非叠加——标题管线（路由、超时、字节预算）与默认完全一致。
 
+### 瞬时失败重试
+
+标题 LLM 调用有界为两次尝试（首次 + 一次重试）。超时、网络错误或适配器失败这类瞬时失败会先重试一次再放弃：session-title 服务会在 provider 运行**之前**就提交一个纯文本 fallback 标题，而本插件是 first-prompt provider，后续消息不会再触发它——若不重试，一次偶发的标题调用失败就会让会话永久停留在纯文本（无 emoji）标题上。取消（会话销毁）不会重试，仍会像以前一样让标题生成失败；若两次尝试都失败，错误照常向上抛出，纯文本 fallback 标题保持不变。
+
 ## 配置
 
 与默认 `session-title-llm` 行使用同一套模型标题配置键（`Config` schema 复用 `SessionTitleLlmConfigFields`）：
@@ -68,6 +72,7 @@ DSH 的会话标题由 `sessionTitle` 服务生成（`@deepseek-ai/dsh-session-t
 
 ```sh
 node --check index.js
+node test/retry.mjs   # 有界重试策略（瞬时失败 → 重试 → emoji 标题）
 ```
 
 ## 对等依赖
