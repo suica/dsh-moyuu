@@ -19,15 +19,18 @@ import { zstdDecompressSync } from "node:zlib";
  * durable committed tail with this writer's batch:
  *
  *  - a batch that continues the durable tail appends normally;
- *  - a batch whose events are ALREADY committed (same seqs, same content) is a
- *    concurrent duplicate — most commonly the deterministic closers two
- *    profiles both generate for the same interrupted turn (`step/end`,
- *    `turn/end`, `session/end-seed`) — and is **skipped idempotently**, so a
- *    second profile opening the same session converges instead of erroring;
+ *  - a batch whose leading events are ALREADY committed (same seqs, same
+ *    content — or the same closer closing the same interrupted turn, whose
+ *    `turn/end` `reason` may legitimately differ between the live writer and a
+ *    cold repairer) is a concurrent duplicate and is **skipped idempotently**;
  *  - a batch whose prefix is committed and whose suffix is not appends only the
- *    suffix (idempotent convergence);
- *  - only a genuinely divergent write — different content at seqs another
- *    process already committed — is rejected with `SESSION_ADVANCED`.
+ *    suffix (idempotent convergence), re-sequenced to continue after the
+ *    durable tail;
+ *  - a genuinely new event that races a committed one (e.g. a fresh user turn
+ *    sent while another profile's repair advanced the log) is **re-sequenced**
+ *    after the durable tail and written there — a stale writer CONVERGES
+ *    instead of erroring, so "talking to an existing session while another
+ *    profile has it open" never fails with "modified by another process".
  *
  * Crash repair is likewise reconciled under the lock: the torn tail is truncated
  * only while it is still torn at the exact boundary this caller observed, so one
@@ -95,7 +98,13 @@ export default class LockingJsonlSessionPersistence extends JsonlSessionPersiste
 	}
 }
 
-/** Distinct failure for an append that genuinely diverged from another process's write. */
+/**
+ * Legacy conflict error shape, retained for compatibility: a consumer that
+ * recognized `SESSION_ADVANCED` (e.g. an older write-sync bundle) still sees
+ * the code here. The convergent reconcile below NEVER throws it — a stale
+ * append is re-based onto the durable tail instead of rejected — so this is
+ * documentation of the error code, not a code path that still fires.
+ */
 function sessionAdvancedError(id, tail, expected) {
 	const error = new Error(`session "${id}" was modified by another process: durable tail is ${tail}, this writer expects ${expected}; reload the session before appending`);
 	error.code = "SESSION_ADVANCED";
@@ -105,10 +114,30 @@ function sessionAdvancedError(id, tail, expected) {
 /**
  * Reconcile one append batch against the durable committed log.
  *
+ * The durable log is authoritative and is never rejected against: a stale
+ * writer (a second profile whose in-memory cursor is behind the durable tail)
+ * CONVERGES instead of failing, so "talking to an existing session while
+ * another profile has it open" stops erroring with `SESSION_ADVANCED`:
+ *
+ *  - a batch that continues the durable tail appends normally;
+ *  - a batch whose leading events are ALREADY committed by another process —
+ *    identical content, or the same turn-closing event (`step/end`,
+ *    `turn/end`, `session/end-seed`) closing the same turn with a different
+ *    `reason` (the live writer's real abort/error reason vs the repairer's
+ *    synthetic `interrupted`) — is a redundant concurrent closer and is
+ *    skipped;
+ *  - the remaining events (a genuinely NEW user turn that races the repair)
+ *    are re-sequenced to continue from `tail + 1` and are written there, so
+ *    nothing is dropped and the log stays contiguous.
+ *
+ * The writer's in-memory cursor is left tracking its own session (the
+ * coordinator's `state.cursor += events.length` lands exactly on the session's
+ * next seq), so subsequent appends keep flowing through this same reconcile
+ * instead of failing with "append seq mismatch" or silently dropping events.
+ *
  * @returns the events that still need to be written (possibly `[]` when every
- * event is already committed by another process).
- * @throws {@link sessionAdvancedError} only when the durable log holds DIFFERENT
- * content at a seq this batch wants to write (a genuine cross-process conflict).
+ * event is already committed by another process), re-sequenced to continue
+ * after the durable tail. Never throws for a stale writer.
  */
 async function reconcileBatch(backend, meta, events, path) {
 	if (events.length === 0) return [];
@@ -116,10 +145,10 @@ async function reconcileBatch(backend, meta, events, path) {
 	const { events: committed, tail } = await readDurableSuffix(backend, meta, path, expected);
 	// Clean contiguous append: the durable tail is exactly one before our batch.
 	if (expected === tail + 1) return events;
-	// The durable log already holds events at our batch's seqs. Every committed
-	// event in our seq range must be IDENTICAL to our own; those are the other
-	// process's concurrent write of the same deterministic events and are
-	// skipped. Different content at a taken seq is a genuine conflict.
+	// The durable log already holds events at our batch's seqs. The committed
+	// log is the history: skip our leading events that are already covered by
+	// it (identical content, or the same closer closing the same turn), then
+	// re-base whatever genuinely remains to start right after the durable tail.
 	const bySeq = /* @__PURE__ */ new Map();
 	for (const event of committed) bySeq.set(event.seq, event);
 	const batchLast = events.at(-1).seq;
@@ -127,22 +156,44 @@ async function reconcileBatch(backend, meta, events, path) {
 	for (let seq = expected; seq <= batchLast; seq++) {
 		const theirs = bySeq.get(seq);
 		if (theirs === void 0) break;
-		if (!sameEvent(theirs, events[overlap])) throw sessionAdvancedError(meta.id, tail, expected);
+		if (!coveredBy(theirs, events[overlap])) break;
 		overlap += 1;
 	}
-	// Bring this process's in-memory cursor forward to the durable tail when the
-	// other process's write already covered our whole batch, so the next append
-	// continues from the real tail instead of failing forever ("reload won't
-	// help" without this).
-	if (tail > batchLast) {
-		const state = backend.coordinator?.states?.get(meta.id);
-		if (state !== void 0 && Number.isInteger(state.cursor)) {
-			// appendCore adds events.length to state.cursor after appendBatch
-			// returns; pre-position it so the final cursor lands on tail + 1.
-			state.cursor += tail - batchLast;
-		}
+	const toWrite = events.slice(overlap);
+	if (toWrite.length === 0) return [];
+	// Re-sequence the remaining events to continue from the durable tail: the
+	// writer's events at `expected + overlap + i` must land at `tail + 1 + i`.
+	const shift = tail + 1 - (expected + overlap);
+	for (const event of toWrite) event.seq += shift;
+	return toWrite;
+}
+
+/**
+ * Whether a committed event at the same seq "covers" the writer's event — the
+ * writer's event is redundant and must be skipped. True for identical content
+ * (concurrent writes of the same deterministic events) and for the same
+ * turn-closing event closing the same turn: two profiles both close one
+ * interrupted turn, and their `turn/end` `reason` legitimately differs (the
+ * live writer records the real abort/error reason, the cold repairer records
+ * the synthetic `interrupted`), but the turn is closed on disk either way.
+ * Different content that is NOT a redundant closer is never conflated — it is
+ * re-sequenced as a genuinely new event instead.
+ */
+function coveredBy(theirs, ours) {
+	if (theirs === void 0 || ours === void 0) return false;
+	if (sameEvent(theirs, ours)) return true;
+	if (theirs.type !== ours.type) return false;
+	const t = ours.data;
+	switch (ours.type) {
+		case "step/end":
+			return t?.turn === theirs.data?.turn && t?.step === theirs.data?.step;
+		case "turn/end":
+			return t?.turn === theirs.data?.turn;
+		case "session/end-seed":
+			return true;
+		default:
+			return false;
 	}
-	return events.slice(overlap);
 }
 
 /**
