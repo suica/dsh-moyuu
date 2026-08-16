@@ -92,11 +92,29 @@ node --check index.js
 
 ## Peer dependencies
 
-Declared as `peerDependencies` on the host harness packages; at runtime they
-resolve through the profile module fallback to the installed harness versions:
+The package subclasses the harness's own persistence backend, so it declares
+the harness packages as `peerDependencies` (the running `dsh` provides them at
+runtime):
 
 - `@deepseek-ai/dsh-session-persistence-jsonl`
 - `@deepseek-ai/dsh-session`
+
+During local development the profile consumes this package through a `link:`
+dependency, and Node resolves ESM imports from the **package's own location**
+(the monorepo worktree) — not from the profile's `node_modules`. The peers are
+therefore also listed as `devDependencies` (pinned to the harness versions the
+profile runs), and **`pnpm install` must be run in the monorepo worktree** so
+they are present there:
+
+```sh
+# from the worktree root
+pnpm install
+```
+
+Without this, the loader fails with `ERR_MODULE_NOT_FOUND: Cannot find package
+'@deepseek-ai/dsh-session-persistence-jsonl'`. Published installs
+(`dsh plugin --profile <name> add …`) install the package into the profile's
+store, where its peers are resolved normally.
 
 ## License
 
