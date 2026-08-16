@@ -5,7 +5,7 @@
  * **emoji-prefixed title**, e.g.:
  *
  *   💻 写一个 LRU 缓存
- *   🐛 修复登录态丢失
+ *   🔧 修复登录态丢失
  *   🚀 deploy to production
  *
  * The emoji is chosen by the LLM itself: this is a first-prompt
@@ -64,8 +64,8 @@ export const Config = z.object({
 export function systemPrompt(config) {
   return [
     "Create a concise title for an AI coding-assistant session from the supplied human messages.",
-    "The title MUST start with exactly one fitting topic emoji followed by a single space, then the title text (for example: \u{1F41B} fix login state loss, \u{1F4BB} write an LRU cache, \u{1F680} deploy to production).",
-    "Choose the emoji to match the dominant topic of the messages (bug fix, performance, testing, deployment, data, UI, research, translation, documentation, learning, planning, or general coding).",
+    "The title MUST start with exactly one fitting topic emoji followed by a single space, then the title text (for example: \u{1F527} fix login state loss, \u{1F4BB} write an LRU cache, \u{1F680} deploy to production).",
+    "Choose the emoji to match the dominant topic of the messages — for bug fixes use a wrench (\u{1F527}), and for other topics (performance, testing, deployment, data, UI, research, translation, documentation, learning, planning, or general coding) pick a fitting emoji.",
     "Return only the title on one line, in plain text of natural language — no quotes, prefix, explanation, Markdown, XML, or terminal control codes. No code is allowed.",
     "Use the language of the messages.",
     `Aim for about ${config.targetWords} words in non-CJK languages, or ${config.targetCjkCharacters} CJK characters, excluding the emoji.`
