@@ -20,8 +20,8 @@ Because it's a pure CSS override it survives React re-renders, works in both lig
 Add the package and activate the plugin row:
 
 ```sh
-# 1. install the package into your profile
-dsh plugin --profile web add dsh-moyuu
+# 1. install the package into your profile (from this git repo)
+dsh plugin --profile web add git+https://github.com/suica/dsh-moyuu.git
 
 # 2. activate it in your profile patch (~/.dsh/profiles/web/cordis.patch.yml)
 ```

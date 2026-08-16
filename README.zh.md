@@ -19,7 +19,7 @@ DeepSeek Harness 的 Web shell 把产品标识画成硬编码的内联 SVG（`vi
 
 ```sh
 # 1. 把包装进你的 profile
-dsh plugin --profile web add dsh-moyuu
+dsh plugin --profile web add git+https://github.com/suica/dsh-moyuu.git
 
 # 2. 在 profile 补丁里激活它（~/.dsh/profiles/web/cordis.patch.yml）
 ```
