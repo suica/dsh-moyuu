@@ -1,8 +1,8 @@
 # dsh-moyuu
 
-MOYU Harness brand plugin for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (`dsh`).
+MOYUU-brand plugin for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (`dsh`).
 
-Replaces the top-left **DeepSeek** wordmark in the `dsh` web UI with **MOYU Harness** — the CSS-only way to give your own instance its own identity.
+**Respects the original DeepSeek brand** — keeps the whale logo and the "DeepSeek" vector wordmark — but replaces the trailing **"Harness"** with **"MOYUU"**, so the top-left wordmark reads **DeepSeek MOYUU**.
 
 ![dsh](https://img.shields.io/badge/dsh-plugin-2a7de1) ![MIT](https://img.shields.io/badge/license-MIT-green)
 
@@ -10,10 +10,11 @@ Replaces the top-left **DeepSeek** wordmark in the `dsh` web UI with **MOYU Harn
 
 The DeepSeek Harness web shell draws its product wordmark as a hardcoded inline SVG (`viewBox="0 0 182 24"`) in the sidebar — there is no configurable slot for it. This plugin is a small **client plugin** (`dsh.client`, platform `web`) that:
 
-1. hides the original DeepSeek wordmark SVG via CSS, and
-2. renders **MOYU Harness** text in its place.
+1. grabs the live wordmark SVG at runtime,
+2. removes only the "Harness" glyph paths (identified by their first x-coordinate ≥ 125) and appends a `<text>MOYUU</text>` in their place,
+3. bakes the result into a data-URI and renders it as the brand button's `::after` background while hiding the original SVG.
 
-Because it's a pure CSS override it survives React re-renders, works in both light and dark themes (it inherits `currentColor`), and touches no compiled build artifacts — it ships as a normal npm package and is picked up at runtime by `dsh-client-modules`.
+Because the baked wordmark is a stable CSS background it survives React re-renders, works in both light and dark themes (the `currentColor` fill inherits the button color), and touches no compiled build artifacts — it ships as a normal npm package and is picked up at runtime by `dsh-client-modules`.
 
 ## Install
 
@@ -50,14 +51,14 @@ Nothing to configure — install and it works. To point the plugin at a local ch
 ## How it works
 
 - `index.js` — the **node half**: an empty `apply()` so the package activates as a Loader entry.
-- `client.js` — the **browser half**: registers via `window.__ModuleLoader__.load({ id, factory })` and injects a `<style>` in `apply()` with the brand override:
+- `client.js` — the **browser half**: registers via `window.__ModuleLoader__.load({ id, factory })`. On activation it grabs the live wordmark SVG, clones it, drops the "Harness" glyph paths (first x-coordinate ≥ 125), appends `<text>MOYUU</text>`, serializes that to a data-URI, and injects a `<style>` that hides the original SVG and shows the baked wordmark as the brand button's `::after` background:
 
 ```css
 svg[viewBox="0 0 182 24"] { display: none !important; }
 button:has(> svg[viewBox="0 0 182 24"])::after {
-  content: "MOYU Harness";
-  font-weight: 600;
-  /* inherits surrounding color/weight */
+  content: "";
+  width: 182px; height: 24px;
+  background: url("data:image/svg+xml,...") no-repeat center / contain;
 }
 ```
 
@@ -75,7 +76,7 @@ The `dsh` manifest:
 
 ## Customize
 
-Edit `client.js`'s `STYLE` string to change the text, font size, weight, or to also restyle the collapsed-rail fish logo.
+To change the replacement text (default `MOYUU`), font size, weight, or position, edit `client.js` — the `<text>` element built in `buildReplacement()` (`x`, `y`, `font-size`, and `textContent`). You can also restyle the collapsed-rail fish logo there if you like.
 
 ## License
 

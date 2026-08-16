@@ -1,7 +1,7 @@
 {
   "name": "dsh-moyuu",
   "version": "0.1.0",
-  "description": "MOYU Harness brand plugin for DeepSeek Harness (dsh): replaces the top-left DeepSeek wordmark with 'MOYU Harness' in the web UI",
+  "description": "MOYUU-brand plugin for DeepSeek Harness (dsh): respects the original DeepSeek wordmark but replaces the trailing 'Harness' with 'MOYUU' in the web UI",
   "keywords": [
     "dsh",
     "deepseek-harness",
