@@ -9,14 +9,16 @@
 
 ## 快速开始（Quick start）
 
-**方式一：直接用我们的 `moyu` profile（全部功能开箱即用）**
+**方式一：直接用我们的 `moyu` profile（全部功能开箱即用，一条命令）**
 
 ```sh
-git clone https://github.com/suica/dsh-moyuu.git
-cd dsh-moyuu
-bash scripts/setup-moyu-profile.sh   # 自动创建 ~/.dsh/profiles/moyu 并 link 安装全部功能
+curl -fsSL https://raw.githubusercontent.com/suica/dsh-moyuu/main/scripts/install-moyu-profile.sh | bash
 dsh --profile moyu --port 3080       # 浏览器打开 http://127.0.0.1:3080
 ```
+
+脚本会从 GitHub clone 一份 dsh-moyuu 到 `~/.local/share/dsh-moyuu`（已存在则更新），
+写好 profile 文件并执行 `pnpm install`。想自己先 clone 仓库再装也行：
+`git clone https://github.com/suica/dsh-moyuu.git && cd dsh-moyuu && bash scripts/setup-moyu-profile.sh`。
 
 **方式二：合并进你自己的 profile（只加想要的功能）**
 

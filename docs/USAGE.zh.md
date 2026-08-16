@@ -42,7 +42,9 @@ dsh-moyuu 是一套面向 [DeepSeek Harness](https://github.com/deepseek-ai/deep
 3. **profile 目录**：所有 profile 在 `$DSH_HOME/profiles/<name>` 下，默认 `$DSH_HOME=~/.dsh`。
    已经见过至少一次 `dsh web` / `dsh --profile <name>` 会**自动初始化** `web`、`headless` 两个模板 profile；
    其它名字的 profile 通过 `dsh plugin --profile <name> …` 自动创建。
-4. **拿到 dsh-moyuu 源码**：功能包目前**没有发布到 npm**，最稳的安装方式是 clone 后用 `link:` 指向本地包：
+4. **dsh-moyuu 源码（仅路径 A 需要自己 clone）**：功能包目前**没有发布到 npm**，也暂不能用 `pnpm add`
+   从 git 子目录直接装包，所以要么自己 clone 后用 `link:` 指向本地包，要么直接走 [路径 B](#6-路径-b直接用我们的-profilemoyu)
+   的一键安装脚本（脚本会自动维护一份托管 clone，用户零手动）：
 
    ```sh
    git clone https://github.com/suica/dsh-moyuu.git
@@ -218,22 +220,35 @@ dsh --profile web --port 3080
 `moyu` profile 是我们配好的**开箱即用** profile：全部 MOYUU 功能 + 默认模型配置，一次到位。
 三种搭法任选其一。
 
-### 6.1 一键脚本（推荐）：不用复制任何文件
+### 6.1 一键安装（推荐）：直接从 GitHub 装，一条命令
 
-仓库自带的 `scripts/setup-moyu-profile.sh` 会自动创建 profile、写入三份文件（`link:` 指向你的 checkout，无需手改路径）、并执行 `pnpm install`：
+不需要 clone、不需要手改任何路径。`scripts/install-moyu-profile.sh` 会从 GitHub clone 一份
+dsh-moyuu 到托管目录（`~/.local/share/dsh-moyuu`，已存在则更新），再调用
+`scripts/setup-moyu-profile.sh` 写好 profile 文件并执行 `pnpm install`：
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/suica/dsh-moyuu/main/scripts/install-moyu-profile.sh | bash
+dsh --profile moyu --port 3080            # 浏览器打开 http://127.0.0.1:3080
+```
+
+细节：
+
+- 默认 profile 名 `moyu`，可传参改名：`… | bash -s 你的名字`；
+- 托管副本位置可用 `DSH_MOYUU_DIR` 覆盖（默认 `~/.local/share/dsh-moyuu`）；
+- 默认写入我们 profile 的默认 agent 模型行（`cliproxy` + `deepseek-v4-flash`）；没有 cliproxy 的机器重跑时加 `MOYU_AGENT_MODEL=0` 跳过该行；
+- 重复运行 = 更新托管副本并重新写 profile（已存在的 profile 会被**覆盖**这三份文件）。
+
+想自己先 clone 仓库再装（等价），或者要改源码开发时用：
 
 ```sh
 git clone https://github.com/suica/dsh-moyuu.git
 cd dsh-moyuu
 bash scripts/setup-moyu-profile.sh        # 创建 ~/.dsh/profiles/moyu 并安装全部功能
-dsh --profile moyu --port 3080            # 浏览器打开 http://127.0.0.1:3080
+dsh --profile moyu --port 3080
 ```
 
-脚本细节：
-
-- 默认 profile 名 `moyu`，可传参改名：`bash scripts/setup-moyu-profile.sh 你的名字`；
-- 默认写入我们 profile 的默认 agent 模型行（`cliproxy` + `deepseek-v4-flash`）；没有 cliproxy 的机器重跑时加 `MOYU_AGENT_MODEL=0` 跳过该行；
-- 已存在的 profile 会被**覆盖**这三份文件（依赖用 `link:` 指向本 checkout）。
+> 注：功能包目前未发布到 npm，也无法用 `pnpm add` 从 git 仓库子目录直接装包，所以一键脚本采用
+> 「托管 clone + link: 安装」的方式——对用户来说仍然是**一条命令**、零手动复制。
 
 ### 6.2 手动搭建（参考：脚本会写入这些文件）
 

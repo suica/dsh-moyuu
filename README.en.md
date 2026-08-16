@@ -8,14 +8,16 @@ This repository is a **pnpm monorepo**: **one feature = one package, each indepe
 
 ## Quick start
 
-**Option 1: use our ready-made `moyu` profile (everything on, out of the box)**
+**Option 1: use our ready-made `moyu` profile (everything on, out of the box — one command)**
 
 ```sh
-git clone https://github.com/suica/dsh-moyuu.git
-cd dsh-moyuu
-bash scripts/setup-moyu-profile.sh   # creates ~/.dsh/profiles/moyu and link-installs every feature
+curl -fsSL https://raw.githubusercontent.com/suica/dsh-moyuu/main/scripts/install-moyu-profile.sh | bash
 dsh --profile moyu --port 3080       # open http://127.0.0.1:3080 in your browser
 ```
+
+The script clones a copy of dsh-moyuu from GitHub into `~/.local/share/dsh-moyuu`
+(updated if it already exists), writes the profile files, and runs `pnpm install`.
+You can also clone the repo yourself and run `bash scripts/setup-moyu-profile.sh`.
 
 **Option 2: merge into your own profile (pick only the features you want)**
 
