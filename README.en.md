@@ -36,6 +36,28 @@ node --check packages/dsh-moyuu-new-session-tooltip/client.js
 node --check packages/dsh-moyuu-session-emoji/index.js
 ```
 
+## Self-iteration workflow (iterate dynamically, solidify once)
+
+Adding a plugin to a profile is a **static composition** change (a dependency +
+a `cordis.patch.yml` row). Static composition is read only at startup, so
+**every change requires a profile restart** — and a restart terminates the
+current session, which makes self-iteration impossible if the agent depends on it.
+
+So split it into two loops:
+
+1. **Hot iteration loop (no restart):** build and debug the feature in the live
+   process with DSH's **dynamic plugin** mechanism first (define → activate →
+   read diagnostics → fix → re-activate; repair on the same plugin, rollback-able).
+   Dynamic plugins are temporary — they vanish on process restart — so they own
+   iteration, not persistence.
+2. **Solidify loop (once per feature):** once stable, create
+   `packages/dsh-moyuu-<feature>/`, add the profile dependency + `cordis.patch.yml`
+   row, then **restart the profile once** (node plugins) or **refresh the page**
+   (client-only plugins).
+
+So "restart the profile" goes from "every iteration" to "once per feature".
+Full rules: [docs/PLUGIN-PACKAGE-RULES.zh.md](docs/PLUGIN-PACKAGE-RULES.zh.md) §9.
+
 ## Install & activate (web profile example)
 
 Each feature is installed and activated on its own. During development use `link:` into this repo:
