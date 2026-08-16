@@ -16,22 +16,27 @@ frames another process just committed — permanently corrupting the session.
 
 This package is a subclass of that backend that wraps every physical write in a
 per-log cross-process **file lock** (`<log>.lock`, `wx` exclusive create, stale
-lock reclaimed by PID liveness) and, before appending, **idempotently
+lock reclaimed by PID liveness) and, before appending, **convergently
 reconciles** the batch against the durable committed tail (re-read under the
 lock, compared event by event):
 
 - a batch that continues the durable tail appends normally;
-- a batch whose events are **already committed by another process with the same
-  seqs and same content** — most commonly the deterministic closers
-  (`step/end` / `turn/end` / `session/end-seed`) that two profiles both generate
-  for the same interrupted turn — is **skipped** instead of rejected, so
-  **opening the same session from another profile no longer errors** (fixes the
-  "reload doesn't help" symptom);
+- a batch whose leading events are **already committed by another process** —
+  identical content, or the same turn-closing event (`step/end` / `turn/end` /
+  `session/end-seed`) closing the same interrupted turn (a live writer records
+  the real abort/error `reason`, a cold repairer records the synthetic
+  `interrupted`; the turn is closed on disk either way) — is **skipped**
+  idempotently, so **talking to an existing session while another profile has
+  it open no longer errors** (fixes the "modified by another process; reload"
+  failure);
 - a batch whose prefix is committed and whose suffix is not appends only the
   missing suffix (idempotent convergence);
-- only a genuinely divergent write — different content at a seq another process
-  already committed — is rejected with `SESSION_ADVANCED` ("modified by another
-  process; reload").
+- a genuinely NEW event that races a committed one — e.g. a fresh user turn
+  sent while another profile's repair advanced the log — is **re-sequenced**
+  after the durable tail and written there, so nothing is dropped and the log
+  stays contiguous. A stale writer **converges instead of failing**: no
+  `SESSION_ADVANCED`, no silent data loss, and its cursor tracks its own
+  session so subsequent appends keep flowing.
 
 Crash repair is reconciled the same way under the lock: the torn tail is
 truncated only while it is still torn at the exact boundary this caller
@@ -39,8 +44,8 @@ observed, so one process never truncates frames another process just committed.
 
 Result: sessions stay **shared across profiles** (no per-profile isolation), and
 concurrent access is safe — the same session can be opened/read from any number
-of profiles, and a second profile opening it converges with the latest durable
-state automatically (no manual reload).
+of profiles, and a stale writer converges with the latest durable state
+automatically (no manual reload).
 
 ## Install & activate
 
@@ -77,17 +82,21 @@ backend.
 
 1. Start two web profiles (`dsh --profile moyu --port 3080`, `dsh --profile web --port 3090`).
 2. Open the same workspace in both; create/continue a session in one.
-3. Confirm the other profile can open the same session **without** `SESSION_ADVANCED`:
-   the two profiles' deterministic closing events reconcile idempotently (the
-   later writer skips), so the log is not duplicated or corrupted.
-4. The session log stays structurally valid (no duplicate/out-of-order `seq`);
-   only a genuine concurrent divergence (different content racing for one `seq`)
-   is rejected with `SESSION_ADVANCED`.
+3. Confirm the other profile can open the same session **without** `SESSION_ADVANCED`,
+   and that **talking to an existing session while both are open does not error**:
+   the two profiles' closing events reconcile idempotently (the later writer
+   skips its redundant closers), and any genuinely new turn is re-sequenced
+   after the durable log instead of rejected.
+4. The session log stays structurally valid (no duplicate/out-of-order `seq`)
+   and no user message is dropped, even when the other profile's repair advanced
+   the log between a stale writer's reads.
 
-Runtime smoke test while developing:
+Runtime smoke tests while developing:
 
 ```sh
 node --check index.js
+node test/converge.mjs
+node test/reproduce.mjs
 ```
 
 ## Peer dependencies
