@@ -43,6 +43,7 @@ Client features take effect on a **page refresh**; server-side features need a *
 |---|---|
 | [packages/dsh-moyuu-brand](packages/dsh-moyuu-brand) | Brand — replaces "Harness" with "MOYUU" in the web wordmark |
 | [packages/dsh-moyuu-tab-in-textbox](packages/dsh-moyuu-tab-in-textbox) | Keyboard — Tab inserts a tab character inside text boxes instead of jumping focus |
+| [packages/dsh-moyuu-input-history](packages/dsh-moyuu-input-history) | Composer — per-conversation prompt history: ArrowUp/ArrowDown on the first line recalls prompts sent in the current conversation |
 | [packages/dsh-moyuu-example](packages/dsh-moyuu-example) | Example — minimal independently-loadable client plugin (template for new features) |
 | [packages/dsh-moyuu-session-context-menu](packages/dsh-moyuu-session-context-menu) | Session context menu — right-clicking a session opens its "⋯" (More) menu at the cursor |
 | [packages/dsh-moyuu-session-write-lock](packages/dsh-moyuu-session-write-lock) | Node bundle — cross-process session write-lock so concurrent profiles never corrupt shared sessions |
@@ -60,6 +61,7 @@ DSH is itself built as one-feature-per-package (`@deepseek-ai/dsh-tool-*`, `dsh-
 pnpm install
 node --check packages/dsh-moyuu-brand/client.js
 node --check packages/dsh-moyuu-tab-in-textbox/client.js
+node --check packages/dsh-moyuu-input-history/client.js
 node --check packages/dsh-moyuu-example/client.js
 node --check packages/dsh-moyuu-session-write-lock/index.js
 node --check packages/dsh-moyuu-cmdk-new-session/client.js

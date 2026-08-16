@@ -34,6 +34,7 @@ PROFILE_DIR="$DSH_HOME/profiles/$PROFILE_NAME"
 PACKAGES=(
   dsh-moyuu-brand
   dsh-moyuu-tab-in-textbox
+  dsh-moyuu-input-history
   dsh-moyuu-session-context-menu
   dsh-moyuu-cmdk-new-session
   dsh-moyuu-new-session-tooltip
@@ -65,6 +66,7 @@ cat > "$PROFILE_DIR/package.json" <<EOF
   "dependencies": {
     "dsh-moyuu-brand": "link:$REPO_ROOT/packages/dsh-moyuu-brand",
     "dsh-moyuu-tab-in-textbox": "link:$REPO_ROOT/packages/dsh-moyuu-tab-in-textbox",
+    "dsh-moyuu-input-history": "link:$REPO_ROOT/packages/dsh-moyuu-input-history",
     "dsh-moyuu-session-context-menu": "link:$REPO_ROOT/packages/dsh-moyuu-session-context-menu",
     "dsh-moyuu-cmdk-new-session": "link:$REPO_ROOT/packages/dsh-moyuu-cmdk-new-session",
     "dsh-moyuu-new-session-tooltip": "link:$REPO_ROOT/packages/dsh-moyuu-new-session-tooltip",
@@ -111,6 +113,11 @@ cat > "$PROFILE_DIR/cordis.patch.yml" <<'EOF'
 - insert:
     - id: dsh-moyuu-tab-in-textbox
       name: 'dsh-moyuu-tab-in-textbox'
+
+# 输入历史：输入框第一行按 ↑/↓ 弹出当前会话发过的 prompt 历史。
+- insert:
+    - id: dsh-moyuu-input-history
+      name: 'dsh-moyuu-input-history'
 
 # emoji 会话标题：替换默认 LLM 标题 provider（标题 provider 只允许注册一个），
 # 因此禁用默认 session-title-llm 行。

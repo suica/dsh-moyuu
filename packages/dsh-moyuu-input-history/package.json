@@ -1,0 +1,39 @@
+{
+  "name": "dsh-moyuu-input-history",
+  "version": "0.1.0",
+  "description": "MOYUU feature package (composer): per-conversation in-memory prompt history in the chat input — with the caret on the first line, ArrowUp/ArrowDown recall the prompts actually sent in the current conversation",
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "plugin",
+    "input",
+    "history",
+    "composer",
+    "keyboard",
+    "web-ui",
+    "moyuu"
+  ],
+  "type": "module",
+  "private": true,
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/suica/dsh-moyuu.git",
+    "directory": "packages/dsh-moyuu-input-history"
+  },
+  "dsh": {
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime"
+      ],
+      "immediately": true
+    }
+  },
+  "license": "MIT"
+}

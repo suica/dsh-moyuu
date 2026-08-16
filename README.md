@@ -43,6 +43,7 @@ dsh plugin --profile web add link:/path/to/dsh-moyuu/packages/dsh-moyuu-brand
 |---|---|
 | [packages/dsh-moyuu-brand](packages/dsh-moyuu-brand) | 品牌：Web 左上角标识 “Harness” → “MOYUU” |
 | [packages/dsh-moyuu-tab-in-textbox](packages/dsh-moyuu-tab-in-textbox) | 键盘：文本框内 Tab 插入制表符，不再跳转焦点 |
+| [packages/dsh-moyuu-input-history](packages/dsh-moyuu-input-history) | 输入历史：输入框第一行按 ↑/↓ 调出当前会话发过的 prompt 历史 |
 | [packages/dsh-moyuu-example](packages/dsh-moyuu-example) | 示例：最小可独立加载的客户端插件（新功能的模板） |
 | [packages/dsh-moyuu-session-context-menu](packages/dsh-moyuu-session-context-menu) | 会话右键菜单：右键会话时在光标处打开其 “⋯”（更多）菜单 |
 | [packages/dsh-moyuu-session-write-lock](packages/dsh-moyuu-session-write-lock) | Node 层包：跨进程会话写锁，并发 profile 不会损坏共享会话 |
@@ -60,6 +61,7 @@ DSH 官方本身就是“每功能一包”（`@deepseek-ai/dsh-tool-*`、`dsh-c
 pnpm install
 node --check packages/dsh-moyuu-brand/client.js
 node --check packages/dsh-moyuu-tab-in-textbox/client.js
+node --check packages/dsh-moyuu-input-history/client.js
 node --check packages/dsh-moyuu-example/client.js
 node --check packages/dsh-moyuu-session-write-lock/index.js
 node --check packages/dsh-moyuu-cmdk-new-session/client.js
