@@ -5,6 +5,8 @@
 本仓库是 **pnpm monorepo**：**一个功能 = 一个 package，每个 package 都可以独立加载 / 移除**。
 分包强制规则见 [docs/PLUGIN-PACKAGE-RULES.zh.md](docs/PLUGIN-PACKAGE-RULES.zh.md)。
 
+📖 想直接用？先读 [使用指南](docs/USAGE.zh.md)——把它合并进你自己的 profile（挑着装），或直接用我们配好的 `moyu` profile（开箱即用）。
+
 ## 功能包列表
 
 | Package | 功能 |

@@ -4,6 +4,8 @@
 
 This repository is a **pnpm monorepo**: **one feature = one package, each independently loadable / removable**. The mandatory rule set lives in [docs/PLUGIN-PACKAGE-RULES.zh.md](docs/PLUGIN-PACKAGE-RULES.zh.md).
 
+📖 Want to use it right away? Start with the [usage guide](docs/USAGE.zh.md) — merge the features into your own profile (pick what you want), or use our ready-made `moyu` profile (everything on, out of the box).
+
 ## Packages
 
 | Package | Feature |
