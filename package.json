@@ -1,29 +1,8 @@
 {
-  "name": "dsh-moyuu",
+  "name": "dsh-moyuu-workspace",
   "version": "0.1.0",
-  "description": "MOYUU-brand plugin for DeepSeek Harness (dsh): respects the original DeepSeek wordmark but replaces the trailing 'Harness' with 'MOYUU' in the web UI",
-  "keywords": [
-    "dsh",
-    "deepseek-harness",
-    "plugin",
-    "brand",
-    "theme",
-    "web-ui"
-  ],
-  "type": "module",
   "private": true,
-  "main": "index.js",
-  "exports": {
-    ".": "./index.js",
-    "./client": "./client.js",
-    "./package.json": "./package.json"
-  },
-  "dsh": {
-    "client": {
-      "platform": "web",
-      "inject": [],
-      "immediately": true
-    }
-  },
+  "description": "MOYUU-brand DeepSeek Harness (dsh) plugin suite — one independently-loadable feature package per feature (rules: docs/PLUGIN-PACKAGE-RULES.zh.md)",
+  "type": "module",
   "license": "MIT"
 }

@@ -1,0 +1,33 @@
+{
+  "name": "dsh-moyuu-example",
+  "version": "0.1.0",
+  "description": "MOYUU feature package (example): minimal independently-loadable client plugin proving the one-feature-per-package pattern (sets a namespaced data attribute + style, depends on nothing)",
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "plugin",
+    "example",
+    "moyuu"
+  ],
+  "type": "module",
+  "private": true,
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/suica/dsh-moyuu.git",
+    "directory": "packages/dsh-moyuu-example"
+  },
+  "dsh": {
+    "client": {
+      "platform": "web",
+      "inject": [],
+      "immediately": true
+    }
+  },
+  "license": "MIT"
+}
