@@ -1,0 +1,34 @@
+{
+  "name": "dsh-moyuu-session-context-menu",
+  "version": "0.1.0",
+  "description": "MOYUU feature package (session context menu): right-clicking a session in the web sidebar opens that session's '⋯' (More) menu at the cursor — same menu as its More button, expanded at the pointer",
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "plugin",
+    "session",
+    "context-menu",
+    "web-ui"
+  ],
+  "type": "module",
+  "private": true,
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/suica/dsh-moyuu.git",
+    "directory": "packages/dsh-moyuu-session-context-menu"
+  },
+  "dsh": {
+    "client": {
+      "platform": "web",
+      "inject": [],
+      "immediately": true
+    }
+  },
+  "license": "MIT"
+}
