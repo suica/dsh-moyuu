@@ -5,6 +5,36 @@
 本仓库是 **pnpm monorepo**：**一个功能 = 一个 package，每个 package 都可以独立加载 / 移除**。
 分包强制规则见 [docs/PLUGIN-PACKAGE-RULES.zh.md](docs/PLUGIN-PACKAGE-RULES.zh.md)。
 
+📖 想直接用？先读 [使用指南](docs/USAGE.zh.md)——把它合并进你自己的 profile（挑着装），或直接用我们配好的 `moyu` profile（开箱即用）。
+
+## 快速开始（Quick start）
+
+**方式一：直接用我们的 `moyu` profile（全部功能开箱即用）**
+
+```sh
+git clone https://github.com/suica/dsh-moyuu.git
+cd dsh-moyuu
+bash scripts/setup-moyu-profile.sh   # 自动创建 ~/.dsh/profiles/moyu 并 link 安装全部功能
+dsh --profile moyu --port 3080       # 浏览器打开 http://127.0.0.1:3080
+```
+
+**方式二：合并进你自己的 profile（只加想要的功能）**
+
+```sh
+# 在 ~/.dsh/profiles/web 安装依赖（自动写入 package.json；client 包提示 "no dsh.bundle" 属预期）
+dsh plugin --profile web add link:/path/to/dsh-moyuu/packages/dsh-moyuu-brand
+```
+
+再给 `~/.dsh/profiles/web/cordis.patch.yml` 加一行激活：
+
+```yaml
+- insert:
+    - id: dsh-moyuu-brand
+      name: 'dsh-moyuu-brand'
+```
+
+客户端功能**刷新页面**即生效；服务端功能**重启 profile**。完整的两条路径、逐功能激活 / 验证 / 移除与 FAQ 见 [使用指南](docs/USAGE.zh.md)。
+
 ## 功能包列表
 
 | Package | 功能 |

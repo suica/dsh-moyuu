@@ -4,6 +4,37 @@
 
 This repository is a **pnpm monorepo**: **one feature = one package, each independently loadable / removable**. The mandatory rule set lives in [docs/PLUGIN-PACKAGE-RULES.zh.md](docs/PLUGIN-PACKAGE-RULES.zh.md).
 
+📖 Want to use it right away? Start with the [usage guide](docs/USAGE.zh.md) — merge the features into your own profile (pick what you want), or use our ready-made `moyu` profile (everything on, out of the box).
+
+## Quick start
+
+**Option 1: use our ready-made `moyu` profile (everything on, out of the box)**
+
+```sh
+git clone https://github.com/suica/dsh-moyuu.git
+cd dsh-moyuu
+bash scripts/setup-moyu-profile.sh   # creates ~/.dsh/profiles/moyu and link-installs every feature
+dsh --profile moyu --port 3080       # open http://127.0.0.1:3080 in your browser
+```
+
+**Option 2: merge into your own profile (pick only the features you want)**
+
+```sh
+# install the dependency in ~/.dsh/profiles/web (writes package.json; the
+# "no dsh.bundle" notice for client packages is expected)
+dsh plugin --profile web add link:/path/to/dsh-moyuu/packages/dsh-moyuu-brand
+```
+
+Then add one activation row to `~/.dsh/profiles/web/cordis.patch.yml`:
+
+```yaml
+- insert:
+    - id: dsh-moyuu-brand
+      name: 'dsh-moyuu-brand'
+```
+
+Client features take effect on a **page refresh**; server-side features need a **profile restart**. The full two paths, per-feature activation / verification / removal, and FAQ live in the [usage guide](docs/USAGE.zh.md).
+
 ## Packages
 
 | Package | Feature |
