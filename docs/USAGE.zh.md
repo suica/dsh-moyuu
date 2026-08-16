@@ -194,6 +194,12 @@ cd ~/.dsh/profiles/web
 pnpm install        # 让 link: 依赖与 peer 依赖就位
 ```
 
+> 也可以用命令装依赖（自动写进 `package.json`；纯 client 包会提示 "no dsh.bundle"，属预期）：
+>
+> ```sh
+> dsh plugin --profile web add link:/path/to/dsh-moyuu/packages/dsh-moyuu-brand
+> ```
+
 - **客户端功能**：刷新浏览器页面即生效（profile 无需重启）。
 - **服务端插件 / 层包**：重启 profile 一次：
 
@@ -210,13 +216,28 @@ dsh --profile web --port 3080
 ## 6. 路径 B：直接用我们的 profile（moyu）
 
 `moyu` profile 是我们配好的**开箱即用** profile：全部 MOYUU 功能 + 默认模型配置，一次到位。
-两种搭法任选其一。
+三种搭法任选其一。
 
-### 6.1 一键复制（推荐）：完整文件
+### 6.1 一键脚本（推荐）：不用复制任何文件
+
+仓库自带的 `scripts/setup-moyu-profile.sh` 会自动创建 profile、写入三份文件（`link:` 指向你的 checkout，无需手改路径）、并执行 `pnpm install`：
 
 ```sh
-mkdir -p ~/.dsh/profiles/moyu
+git clone https://github.com/suica/dsh-moyuu.git
+cd dsh-moyuu
+bash scripts/setup-moyu-profile.sh        # 创建 ~/.dsh/profiles/moyu 并安装全部功能
+dsh --profile moyu --port 3080            # 浏览器打开 http://127.0.0.1:3080
 ```
+
+脚本细节：
+
+- 默认 profile 名 `moyu`，可传参改名：`bash scripts/setup-moyu-profile.sh 你的名字`；
+- 默认写入我们 profile 的默认 agent 模型行（`cliproxy` + `deepseek-v4-flash`）；没有 cliproxy 的机器重跑时加 `MOYU_AGENT_MODEL=0` 跳过该行；
+- 已存在的 profile 会被**覆盖**这三份文件（依赖用 `link:` 指向本 checkout）。
+
+### 6.2 手动搭建（参考：脚本会写入这些文件）
+
+下面三份文件就是脚本 6.1 实际写入的内容，供**参考 / 定制**（一般不需要手动复制）：
 
 **`~/.dsh/profiles/moyu/package.json`**（把 `<dsh-moyuu>` 换成你的 clone 路径）：
 
@@ -300,7 +321,7 @@ mkdir -p ~/.dsh/profiles/moyu
     model: deepseek-v4-flash
 ```
 
-**`~/.dsh/profiles/moyu/pnpm-workspace.yaml`**（与其它 profile 一致；也可用 6.2 的 `dsh plugin` 自动生成）：
+**`~/.dsh/profiles/moyu/pnpm-workspace.yaml`**（与其它 profile 一致；也可用 6.3 的 `dsh plugin` 自动生成）：
 
 ```yaml
 packages:
@@ -320,7 +341,7 @@ dsh --profile moyu --port 3080
 
 浏览器打开 `http://127.0.0.1:3080` 即是我们配好的 MOYUU 界面。
 
-### 6.2 从零初始化：用 `dsh plugin` 逐步搭
+### 6.3 从零初始化：用 `dsh plugin` 逐步搭
 
 `dsh plugin --profile moyu <pnpm 参数>` 首次调用会自动初始化 profile 目录。等 npm 发布后逐步 `add`：
 
@@ -337,15 +358,15 @@ dsh plugin --profile moyu add dsh-moyuu-session-emoji
 > `dsh plugin add` 会打印 `declares no dsh.bundle — installed as a plain dependency` ——
 > 这是**预期行为**，客户端功能走 `cordis.patch.yml` 行激活，不需要成为 bundle 层。
 
-### 6.3 启动与验证
+### 6.4 启动与验证
 
 - 启动：`dsh --profile moyu --port 3080`（`--port` 是 Web 应用的参数，不是 `dsh` 的）。
 - 预览组合后的配置树（不启动）：`dsh --profile moyu --dump-config`。
 - 全部功能同时生效（验证方法见 [第 7 节](#7-每个功能的验证与注意事项)）。
 
-### 6.4 我们的 profile 里做了什么配置
+### 6.5 我们的 profile 里做了什么配置
 
-- 7 个功能包全部启用（见 6.1 的两个文件）；
+- 7 个功能包全部启用（见 6.1 / 6.2 的两个文件）；
 - `dsh-moyuu-session-write-lock` 以 bundle 层接入，共享会话跨 profile 安全；
 - `dsh-moyuu-session-emoji` 替换默认 LLM 标题 provider（`session-title-llm` 被禁用）；
 - 默认 agent 模型走 `cliproxy` + `deepseek-v4-flash`。
@@ -397,7 +418,8 @@ A：`link:` 安装时，Node 从包自身所在位置（monorepo worktree）解�
 让 session-emoji / session-write-lock 的 peer 依赖就位。发布安装（`dsh plugin add`）不会有这个问题。
 
 **Q：`link:` 路径写不对 / 换机器了？**
-A：`link:` 是绝对路径。换路径后改 `<dsh-moyuu>` 占位，再 `cd ~/.dsh/profiles/<name> && pnpm install`。
+A：`link:` 是绝对路径。最省事的是直接跑 6.1 的脚本——它按当前 checkout 路径自动生成，换机器后重跑一次即可；
+手动改的话把 `<dsh-moyuu>` 占位换成真实路径，再 `cd ~/.dsh/profiles/<name> && pnpm install`。
 等包发布到 npm 后，直接 `dsh plugin --profile <name> add dsh-moyuu-<feature>`，不再需要 clone 与 link。
 
 **Q：想只停用某一个功能？**

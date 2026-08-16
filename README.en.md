@@ -12,22 +12,20 @@ This repository is a **pnpm monorepo**: **one feature = one package, each indepe
 
 ```sh
 git clone https://github.com/suica/dsh-moyuu.git
-mkdir -p ~/.dsh/profiles/moyu
-# copy package.json / cordis.patch.yml / pnpm-workspace.yaml from §6 of
-# docs/USAGE.zh.md into ~/.dsh/profiles/moyu/, replacing <dsh-moyuu> with your clone path
-cd ~/.dsh/profiles/moyu && pnpm install
-dsh --profile moyu --port 3080   # open http://127.0.0.1:3080 in your browser
+cd dsh-moyuu
+bash scripts/setup-moyu-profile.sh   # creates ~/.dsh/profiles/moyu and link-installs every feature
+dsh --profile moyu --port 3080       # open http://127.0.0.1:3080 in your browser
 ```
 
 **Option 2: merge into your own profile (pick only the features you want)**
 
-Add a dependency in `~/.dsh/profiles/<your-profile>/package.json` and an activation row in `cordis.patch.yml`:
-
-```jsonc
-"dependencies": {
-  "dsh-moyuu-brand": "link:/path/to/dsh-moyuu/packages/dsh-moyuu-brand"
-}
+```sh
+# install the dependency in ~/.dsh/profiles/web (writes package.json; the
+# "no dsh.bundle" notice for client packages is expected)
+dsh plugin --profile web add link:/path/to/dsh-moyuu/packages/dsh-moyuu-brand
 ```
+
+Then add one activation row to `~/.dsh/profiles/web/cordis.patch.yml`:
 
 ```yaml
 - insert:

@@ -13,22 +13,19 @@
 
 ```sh
 git clone https://github.com/suica/dsh-moyuu.git
-mkdir -p ~/.dsh/profiles/moyu
-# 把 docs/USAGE.zh.md 第 6 节的 package.json / cordis.patch.yml / pnpm-workspace.yaml
-# 复制进 ~/.dsh/profiles/moyu/，并把其中 <dsh-moyuu> 换成你的 clone 路径
-cd ~/.dsh/profiles/moyu && pnpm install
-dsh --profile moyu --port 3080   # 浏览器打开 http://127.0.0.1:3080
+cd dsh-moyuu
+bash scripts/setup-moyu-profile.sh   # 自动创建 ~/.dsh/profiles/moyu 并 link 安装全部功能
+dsh --profile moyu --port 3080       # 浏览器打开 http://127.0.0.1:3080
 ```
 
 **方式二：合并进你自己的 profile（只加想要的功能）**
 
-在 `~/.dsh/profiles/<你的 profile>/package.json` 加依赖、`cordis.patch.yml` 加一行激活：
-
-```jsonc
-"dependencies": {
-  "dsh-moyuu-brand": "link:/path/to/dsh-moyuu/packages/dsh-moyuu-brand"
-}
+```sh
+# 在 ~/.dsh/profiles/web 安装依赖（自动写入 package.json；client 包提示 "no dsh.bundle" 属预期）
+dsh plugin --profile web add link:/path/to/dsh-moyuu/packages/dsh-moyuu-brand
 ```
+
+再给 `~/.dsh/profiles/web/cordis.patch.yml` 加一行激活：
 
 ```yaml
 - insert:
