@@ -14,6 +14,7 @@ This repository is a **pnpm monorepo**: **one feature = one package, each indepe
 | [packages/dsh-moyuu-session-write-lock](packages/dsh-moyuu-session-write-lock) | Node bundle — cross-process session write-lock so concurrent profiles never corrupt shared sessions |
 | [packages/dsh-moyuu-cmdk-new-session](packages/dsh-moyuu-cmdk-new-session) | Keyboard shortcut — Mod+K (Cmd+K / Ctrl+K) opens a New Session in the web UI |
 | [packages/dsh-moyuu-new-session-tooltip](packages/dsh-moyuu-new-session-tooltip) | New Session button tooltip — hover shows its label plus the ⌘K/Ctrl+K shortcut hint |
+| [packages/dsh-moyuu-session-emoji](packages/dsh-moyuu-session-emoji) | Node plugin — session-title provider that names each session with an LLM-chosen emoji prefix (replaces the default LLM title provider) |
 
 ## Why monorepo
 
@@ -28,6 +29,7 @@ node --check packages/dsh-moyuu-example/client.js
 node --check packages/dsh-moyuu-session-write-lock/index.js
 node --check packages/dsh-moyuu-cmdk-new-session/client.js
 node --check packages/dsh-moyuu-new-session-tooltip/client.js
+node --check packages/dsh-moyuu-session-emoji/index.js
 ```
 
 ## Install & activate (web profile example)
@@ -72,6 +74,30 @@ changes automatically:
 ```
 
 See the package README for what it fixes and how to verify.
+
+### Node plugins (server-side features via patch rows)
+
+A server-side feature (e.g. `dsh-moyuu-session-emoji`) is a plain package whose
+`index.js` exports `apply`; it is activated by an insert row in
+`cordis.patch.yml` (no `dsh.bundle` needed):
+
+```yaml
+# ~/.dsh/profiles/web/cordis.patch.yml — enable only the features you want
+- insert:
+    - id: dsh-moyuu-session-emoji
+      name: 'dsh-moyuu-session-emoji'
+      config:
+        targetWords: 5
+        targetCjkCharacters: 10
+        maxInputBytes: 4096
+        maxOutputTokens: 64
+        timeoutMs: 60000
+```
+
+`dsh-moyuu-session-emoji` additionally **replaces the default LLM title
+provider** (only one session-title provider may register), so it also disables
+the `session-title-llm` row — see its package README. Removing the dependency
+plus the rows stops exactly that feature.
 
 ## License
 
