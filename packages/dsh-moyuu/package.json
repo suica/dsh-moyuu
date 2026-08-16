@@ -1,0 +1,34 @@
+{
+  "name": "dsh-moyuu",
+  "version": "0.1.0",
+  "description": "MOYUU feature package (brand): respects the original DeepSeek wordmark but replaces the trailing 'Harness' with 'MOYUU' in the web UI",
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "plugin",
+    "brand",
+    "theme",
+    "web-ui"
+  ],
+  "type": "module",
+  "private": true,
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/suica/dsh-moyuu.git",
+    "directory": "packages/dsh-moyuu"
+  },
+  "dsh": {
+    "client": {
+      "platform": "web",
+      "inject": [],
+      "immediately": true
+    }
+  },
+  "license": "MIT"
+}
