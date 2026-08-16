@@ -13,6 +13,7 @@ This repository is a **pnpm monorepo**: **one feature = one package, each indepe
 | [packages/dsh-moyuu-session-context-menu](packages/dsh-moyuu-session-context-menu) | Session context menu — right-clicking a session opens its "⋯" (More) menu at the cursor |
 | [packages/dsh-moyuu-session-write-lock](packages/dsh-moyuu-session-write-lock) | Node bundle — cross-process session write-lock so concurrent profiles never corrupt shared sessions |
 | [packages/dsh-moyuu-cmdk-new-session](packages/dsh-moyuu-cmdk-new-session) | Keyboard shortcut — Mod+K (Cmd+K / Ctrl+K) opens a New Session in the web UI |
+| [packages/dsh-moyuu-new-session-tooltip](packages/dsh-moyuu-new-session-tooltip) | New Session button tooltip — hover shows its label plus the ⌘K/Ctrl+K shortcut hint |
 
 ## Why monorepo
 
@@ -26,6 +27,7 @@ node --check packages/dsh-moyuu/client.js
 node --check packages/dsh-moyuu-example/client.js
 node --check packages/dsh-moyuu-session-write-lock/index.js
 node --check packages/dsh-moyuu-cmdk-new-session/client.js
+node --check packages/dsh-moyuu-new-session-tooltip/client.js
 ```
 
 ## Install & activate (web profile example)

@@ -10,7 +10,11 @@ importers:
 
   packages/dsh-moyuu: {}
 
+  packages/dsh-moyuu-cmdk-new-session: {}
+
   packages/dsh-moyuu-example: {}
+
+  packages/dsh-moyuu-new-session-tooltip: {}
 
   packages/dsh-moyuu-session-context-menu: {}
 
