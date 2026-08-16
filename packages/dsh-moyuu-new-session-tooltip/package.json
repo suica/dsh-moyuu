@@ -1,0 +1,35 @@
+{
+  "name": "dsh-moyuu-new-session-tooltip",
+  "version": "0.1.0",
+  "description": "MOYUU feature package (hover tooltip): hovering the sidebar's New Session button shows its localized label plus the keyboard-shortcut hint (⌘K on macOS / Ctrl+K elsewhere), styled like the built-in tooltip and active in both collapsed and wide sidebar states.",
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "plugin",
+    "tooltip",
+    "new-session",
+    "web-ui",
+    "moyuu"
+  ],
+  "type": "module",
+  "private": true,
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/suica/dsh-moyuu.git",
+    "directory": "packages/dsh-moyuu-new-session-tooltip"
+  },
+  "dsh": {
+    "client": {
+      "platform": "web",
+      "inject": [],
+      "immediately": true
+    }
+  },
+  "license": "MIT"
+}
