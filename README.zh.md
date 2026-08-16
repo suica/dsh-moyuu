@@ -11,6 +11,7 @@
 |---|---|
 | [packages/dsh-moyuu](packages/dsh-moyuu) | 品牌：Web 左上角标识 “Harness” → “MOYUU” |
 | [packages/dsh-moyuu-example](packages/dsh-moyuu-example) | 示例：最小可独立加载的客户端插件（新功能的模板） |
+| [packages/dsh-moyuu-cmdk-new-session](packages/dsh-moyuu-cmdk-new-session) | 快捷键：Mod+K（Cmd+K / Ctrl+K）在 Web 界面新建会话 |
 
 ## 为什么用 monorepo
 
@@ -22,6 +23,7 @@ DSH 官方本身就是“每功能一包”（`@deepseek-ai/dsh-tool-*`、`dsh-c
 pnpm install
 node --check packages/dsh-moyuu/client.js
 node --check packages/dsh-moyuu-example/client.js
+node --check packages/dsh-moyuu-cmdk-new-session/client.js
 ```
 
 ## 安装 / 激活（以 web profile 为例）

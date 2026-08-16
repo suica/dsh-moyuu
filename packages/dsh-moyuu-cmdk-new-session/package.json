@@ -1,0 +1,38 @@
+{
+  "name": "dsh-moyuu-cmdk-new-session",
+  "version": "0.1.0",
+  "description": "MOYUU feature package (keyboard shortcut): press Mod+K (Cmd+K on macOS / Ctrl+K elsewhere) anywhere in the web UI to open a New Session, reusing the exact same action as the sidebar's New Session button.",
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "plugin",
+    "keyboard",
+    "shortcut",
+    "new-session",
+    "web-ui",
+    "moyuu"
+  ],
+  "type": "module",
+  "private": true,
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/suica/dsh-moyuu.git",
+    "directory": "packages/dsh-moyuu-cmdk-new-session"
+  },
+  "dsh": {
+    "client": {
+      "platform": "web",
+      "inject": [
+        "@deepseek-ai/dsh-client-runtime"
+      ],
+      "immediately": true
+    }
+  },
+  "license": "MIT"
+}
