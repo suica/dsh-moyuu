@@ -2,7 +2,7 @@
 
 **Feature: session-title provider plugin that names each session with a topic-emoji prefix.**
 
-At session-naming time (the first user message), this plugin emits a session title of the form `💻 写一个 LRU 缓存`, `🐛 修复登录态丢失`, `🚀 deploy to production` — a **topic emoji chosen by the LLM**, followed by a short title — so the sidebar is scannable at a glance.
+At session-naming time (the first user message), this plugin emits a session title of the form `💻 写一个 LRU 缓存`, `🔧 修复登录态丢失`, `🚀 deploy to production` — a **topic emoji chosen by the LLM**, followed by a short title — so the sidebar is scannable at a glance.
 
 ## What it does
 
@@ -65,7 +65,7 @@ Then run `pnpm install` in the profile directory and restart the profile. Removi
 
 1. Activate as above and restart the profile.
 2. Start a new session with a first message such as "fix the login page bug".
-3. Once naming completes (after the first message is accepted), the sidebar title should read something like `🐛 fix the login page bug` (the exact emoji is model-chosen).
+3. Once naming completes (after the first message is accepted), the sidebar title should read something like `🔧 fix the login page bug` (the exact emoji is model-chosen).
 4. A first message in Chinese, e.g. 「写一个 LRU 缓存」, should produce something like `💻 写一个 LRU 缓存`.
 
 Smoke test (development):
