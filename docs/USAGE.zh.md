@@ -27,6 +27,7 @@ dsh-moyuu 是一套面向 [DeepSeek Harness](https://github.com/deepseek-ai/deep
 |---|---|---|
 | `dsh-moyuu-brand` | 客户端插件 | Web 左上角标识 "Harness" → "MOYUU"（成为 **DeepSeek MOYUU**） |
 | `dsh-moyuu-tab-in-textbox` | 客户端插件 | 文本框内 Tab 插入制表符，不再跳转焦点 |
+| `dsh-moyuu-input-history` | 客户端插件 | 输入历史：输入框第一行按 ↑/↓ 调出当前会话发过的 prompt 历史 |
 | `dsh-moyuu-session-context-menu` | 客户端插件 | 右键会话在光标处打开其 "⋯"（更多）菜单 |
 | `dsh-moyuu-cmdk-new-session` | 客户端插件 | Mod+K（Cmd+K / Ctrl+K）在 Web 界面新建会话 |
 | `dsh-moyuu-new-session-tooltip` | 客户端插件 | 悬停"新会话"按钮显示文案与 ⌘K / Ctrl+K 快捷键提示 |
