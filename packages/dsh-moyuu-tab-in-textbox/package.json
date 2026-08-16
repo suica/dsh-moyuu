@@ -1,0 +1,36 @@
+{
+  "name": "dsh-moyuu-tab-in-textbox",
+  "version": "0.1.0",
+  "description": "MOYUU feature package (keyboard): in every text box, the Tab key inserts a literal tab character instead of triggering dsh's global accessibility focus-jump between page elements",
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "plugin",
+    "keyboard",
+    "tab",
+    "input",
+    "accessibility",
+    "web-ui"
+  ],
+  "type": "module",
+  "private": true,
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./package.json": "./package.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/suica/dsh-moyuu.git",
+    "directory": "packages/dsh-moyuu-tab-in-textbox"
+  },
+  "dsh": {
+    "client": {
+      "platform": "web",
+      "inject": [],
+      "immediately": true
+    }
+  },
+  "license": "MIT"
+}

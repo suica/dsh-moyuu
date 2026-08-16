@@ -9,6 +9,7 @@ This repository is a **pnpm monorepo**: **one feature = one package, each indepe
 | Package | Feature |
 |---|---|
 | [packages/dsh-moyuu](packages/dsh-moyuu) | Brand — replaces "Harness" with "MOYUU" in the web wordmark |
+| [packages/dsh-moyuu-tab-in-textbox](packages/dsh-moyuu-tab-in-textbox) | Keyboard — Tab inserts a tab character inside text boxes instead of jumping focus |
 | [packages/dsh-moyuu-example](packages/dsh-moyuu-example) | Example — minimal independently-loadable client plugin (template for new features) |
 | [packages/dsh-moyuu-session-context-menu](packages/dsh-moyuu-session-context-menu) | Session context menu — right-clicking a session opens its "⋯" (More) menu at the cursor |
 | [packages/dsh-moyuu-session-write-lock](packages/dsh-moyuu-session-write-lock) | Node bundle — cross-process session write-lock so concurrent profiles never corrupt shared sessions |
@@ -25,6 +26,7 @@ DSH is itself built as one-feature-per-package (`@deepseek-ai/dsh-tool-*`, `dsh-
 ```sh
 pnpm install
 node --check packages/dsh-moyuu/client.js
+node --check packages/dsh-moyuu-tab-in-textbox/client.js
 node --check packages/dsh-moyuu-example/client.js
 node --check packages/dsh-moyuu-session-write-lock/index.js
 node --check packages/dsh-moyuu-cmdk-new-session/client.js
