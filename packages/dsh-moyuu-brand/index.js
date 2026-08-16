@@ -1,5 +1,5 @@
 /**
- * dsh-moyuu — node half.
+ * dsh-moyuu-brand — node half.
  *
  * Pure UI plugin: the empty apply exists so the plugin appears in the host
  * cordis.yml / Loader as an activatable entry; the actual branding runs in

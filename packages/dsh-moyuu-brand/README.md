@@ -1,4 +1,4 @@
-# dsh-moyuu
+# dsh-moyuu-brand
 
 **Brand** feature package of the [dsh-moyuu](https://github.com/suica/dsh-moyuu) monorepo — a client plugin for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (`dsh`).
 
@@ -21,15 +21,15 @@ Because the mutation lives in the live DOM, `currentColor` and CSS variables res
 ```jsonc
 // in ~/.dsh/profiles/web/package.json — this feature only
 "dependencies": {
-  "dsh-moyuu": "link:/path/to/dsh-moyuu/packages/dsh-moyuu"
+  "dsh-moyuu-brand": "link:/path/to/dsh-moyuu/packages/dsh-moyuu-brand"
 }
 ```
 
 ```yaml
 # in ~/.dsh/profiles/web/cordis.patch.yml
 - insert:
-    - id: dsh-moyuu
-      name: 'dsh-moyuu'
+    - id: dsh-moyuu-brand
+      name: 'dsh-moyuu-brand'
 ```
 
 Refresh the web UI. The wordmark becomes **DeepSeek MOYUU**. Removing this row + dependency leaves every other feature untouched.

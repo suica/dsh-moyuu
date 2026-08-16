@@ -2,15 +2,13 @@
 
 [简体中文](README.md) | English
 
-MOYUU-brand plugin **suite** for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness) (`dsh`).
-
 This repository is a **pnpm monorepo**: **one feature = one package, each independently loadable / removable**. The mandatory rule set lives in [docs/PLUGIN-PACKAGE-RULES.zh.md](docs/PLUGIN-PACKAGE-RULES.zh.md).
 
 ## Packages
 
 | Package | Feature |
 |---|---|
-| [packages/dsh-moyuu](packages/dsh-moyuu) | Brand — replaces "Harness" with "MOYUU" in the web wordmark |
+| [packages/dsh-moyuu-brand](packages/dsh-moyuu-brand) | Brand — replaces "Harness" with "MOYUU" in the web wordmark |
 | [packages/dsh-moyuu-tab-in-textbox](packages/dsh-moyuu-tab-in-textbox) | Keyboard — Tab inserts a tab character inside text boxes instead of jumping focus |
 | [packages/dsh-moyuu-example](packages/dsh-moyuu-example) | Example — minimal independently-loadable client plugin (template for new features) |
 | [packages/dsh-moyuu-session-context-menu](packages/dsh-moyuu-session-context-menu) | Session context menu — right-clicking a session opens its "⋯" (More) menu at the cursor |
@@ -27,7 +25,7 @@ DSH is itself built as one-feature-per-package (`@deepseek-ai/dsh-tool-*`, `dsh-
 
 ```sh
 pnpm install
-node --check packages/dsh-moyuu/client.js
+node --check packages/dsh-moyuu-brand/client.js
 node --check packages/dsh-moyuu-tab-in-textbox/client.js
 node --check packages/dsh-moyuu-example/client.js
 node --check packages/dsh-moyuu-session-write-lock/index.js
@@ -65,7 +63,7 @@ Each feature is installed and activated on its own. During development use `link
 ```jsonc
 // ~/.dsh/profiles/web/package.json
 "dependencies": {
-  "dsh-moyuu": "link:/path/to/dsh-moyuu/packages/dsh-moyuu",
+  "dsh-moyuu-brand": "link:/path/to/dsh-moyuu/packages/dsh-moyuu-brand",
   "dsh-moyuu-example": "link:/path/to/dsh-moyuu/packages/dsh-moyuu-example"
 }
 ```
@@ -73,8 +71,8 @@ Each feature is installed and activated on its own. During development use `link
 ```yaml
 # ~/.dsh/profiles/web/cordis.patch.yml — enable only the features you want
 - insert:
-    - id: dsh-moyuu
-      name: 'dsh-moyuu'
+    - id: dsh-moyuu-brand
+      name: 'dsh-moyuu-brand'
     - id: dsh-moyuu-example
       name: 'dsh-moyuu-example'
 ```

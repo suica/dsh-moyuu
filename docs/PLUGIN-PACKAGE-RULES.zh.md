@@ -112,7 +112,7 @@ dsh-moyuu/
 ├── docs/
 │   └── PLUGIN-PACKAGE-RULES.zh.md       # 本规则
 └── packages/
-    ├── dsh-moyuu/                       # 功能：品牌（wordmark）
+    ├── dsh-moyuu-brand/                 # 功能：品牌（wordmark）
     └── dsh-moyuu-example/               # 功能：示例（独立加载的最小样例）
 ```
 
